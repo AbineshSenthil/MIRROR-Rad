@@ -1,0 +1,9 @@
+{
+  "ece_after": 0.021044343736191868,
+  "ece_before": 0.025983676760236125,
+  "fit_split": "validation",
+  "n_examples": 8001,
+  "nll_after": 0.2184206794903028,
+  "nll_before": 0.22381381891342036,
+  "temperature": 1.1543307815363504
+}

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import pickle
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -242,6 +243,22 @@ class HuggingFaceNLIPredictor:
         return (Label.CONTRADICTED, Label.UNSUPPORTED, Label.ENTAILED)[min(index, 2)]
 
 
+class _HeldOutProbabilityCalibrator:
+    """Serializable wrapper applying multinomial sigmoid recalibration."""
+
+    def __init__(self, estimator: Any, calibrator: Any) -> None:
+        self.estimator = estimator
+        self.calibrator = calibrator
+        self.classes_ = calibrator.classes_
+
+    def predict_proba(self, features: Sequence[Mapping[str, float]]) -> Any:
+        import numpy as np
+
+        probabilities = np.asarray(self.estimator.predict_proba(list(features)), dtype=float)
+        transformed = np.log(np.clip(probabilities, 1e-9, 1.0))
+        return self.calibrator.predict_proba(transformed)
+
+
 class SklearnFusionClassifier:
     """Learn how to fuse retrieval, NLI and rule signals.
 
@@ -303,6 +320,55 @@ class SklearnFusionClassifier:
             "class_counts": unique_counts,
             "calibrated": self.calibrated,
             "feature_names": list(self.model.named_steps["vectorizer"].get_feature_names_out()),
+        }
+        return self
+
+    def calibrate_on(
+        self,
+        features: Sequence[Mapping[str, float]],
+        labels: Sequence[Label | str],
+        *,
+        method: str = "sigmoid",
+        split_name: str = "held-out calibration",
+    ) -> SklearnFusionClassifier:
+        """Calibrate a fitted fusion model on an explicitly separate split.
+
+        The previous implementation calibrated with random row-level folds,
+        which could place claims from one study on both sides of a fold.  A
+        frozen estimator plus a subject-disjoint calibration partition removes
+        that shortcut and makes the split provenance explicit in metadata.
+        """
+
+        if self.model is None:
+            raise RuntimeError("Fit fusion before calibration")
+        if not features or len(features) != len(labels):
+            raise ValueError("calibration features and labels must be non-empty and aligned")
+        import numpy as np
+        from sklearn.linear_model import LogisticRegression
+
+        y = [Label.coerce(value).value for value in labels]
+        if Label.REVIEW.value in y or len(set(y)) < 2:
+            raise ValueError("Calibration requires at least two non-REVIEW classes")
+        if method != "sigmoid":
+            raise ValueError("Held-out fusion calibration currently supports sigmoid only")
+        base_probabilities = np.asarray(self.model.predict_proba(list(features)), dtype=float)
+        calibration_inputs = np.log(np.clip(base_probabilities, 1e-9, 1.0))
+        calibrator = LogisticRegression(
+            C=1.0,
+            class_weight="balanced",
+            max_iter=2000,
+            random_state=self.random_state,
+        )
+        calibrator.fit(calibration_inputs, y)
+        self.model = _HeldOutProbabilityCalibrator(self.model, calibrator)
+        self.calibrated = True
+        self.training_metadata["calibrated"] = True
+        self.training_metadata["calibration"] = {
+            "method": method,
+            "split": split_name,
+            "n_examples": len(y),
+            "class_counts": dict(Counter(y)),
+            "group_policy": "separate subject-disjoint partition",
         }
         return self
 

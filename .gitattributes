@@ -10,4 +10,4 @@ artifacts/** -text
 reports/public/evaluation_summary.json -text
 
 # The trained checkpoint exceeds GitHub's ordinary-file limit and is delivered through Git LFS.
-artifacts/vigil-rad-clinical-nli/best/model.safetensors filter=lfs diff=lfs merge=lfs -text
+artifacts/mirror-rad-clinical-nli/best/model.safetensors filter=lfs diff=lfs merge=lfs -text

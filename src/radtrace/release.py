@@ -11,7 +11,7 @@ from typing import Any
 
 from radtrace.product import PRODUCT_NAME
 
-RELEASE_SCHEMA = "vigil-rad.release.v1"
+RELEASE_SCHEMA = "mirror-rad.release.v1"
 REQUIRED_RELEASE_ASSETS = frozenset(
     {
         "application",

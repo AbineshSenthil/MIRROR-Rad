@@ -26,25 +26,25 @@
 # Exact operational model assets only
 !/artifacts/
 /artifacts/*
-!/artifacts/vigil-rad-system/
-/artifacts/vigil-rad-system/*
-!/artifacts/vigil-rad-system/tuned_verifier/
-/artifacts/vigil-rad-system/tuned_verifier/*
-!/artifacts/vigil-rad-system/tuned_verifier/verifier_config.json
-!/artifacts/vigil-rad-system/tuned_verifier/fusion_model.pkl
-!/artifacts/vigil-rad-clinical-nli/
-/artifacts/vigil-rad-clinical-nli/*
-!/artifacts/vigil-rad-clinical-nli/best/
-/artifacts/vigil-rad-clinical-nli/best/*
-!/artifacts/vigil-rad-clinical-nli/best/calibration.json
-!/artifacts/vigil-rad-clinical-nli/best/config.json
-!/artifacts/vigil-rad-clinical-nli/best/model.safetensors
-!/artifacts/vigil-rad-clinical-nli/best/special_tokens_map.json
-!/artifacts/vigil-rad-clinical-nli/best/tokenizer_config.json
-!/artifacts/vigil-rad-clinical-nli/best/tokenizer.json
-!/artifacts/vigil-rad-clinical-nli/best/vocab.txt
-!/artifacts/vigil-rad-risk-calibrator.pkl
-!/artifacts/vigil-rad-release.json
+!/artifacts/mirror-rad-system/
+/artifacts/mirror-rad-system/*
+!/artifacts/mirror-rad-system/tuned_verifier/
+/artifacts/mirror-rad-system/tuned_verifier/*
+!/artifacts/mirror-rad-system/tuned_verifier/verifier_config.json
+!/artifacts/mirror-rad-system/tuned_verifier/fusion_model.pkl
+!/artifacts/mirror-rad-clinical-nli/
+/artifacts/mirror-rad-clinical-nli/*
+!/artifacts/mirror-rad-clinical-nli/best/
+/artifacts/mirror-rad-clinical-nli/best/*
+!/artifacts/mirror-rad-clinical-nli/best/calibration.json
+!/artifacts/mirror-rad-clinical-nli/best/config.json
+!/artifacts/mirror-rad-clinical-nli/best/model.safetensors
+!/artifacts/mirror-rad-clinical-nli/best/special_tokens_map.json
+!/artifacts/mirror-rad-clinical-nli/best/tokenizer_config.json
+!/artifacts/mirror-rad-clinical-nli/best/tokenizer.json
+!/artifacts/mirror-rad-clinical-nli/best/vocab.txt
+!/artifacts/mirror-rad-risk-calibrator.pkl
+!/artifacts/mirror-rad-release.json
 
 # Aggregate-only evaluation evidence; row-level predictions and report text stay private
 !/reports/
@@ -57,4 +57,3 @@
 **/__pycache__/
 *.py[cod]
 *.pyd
-

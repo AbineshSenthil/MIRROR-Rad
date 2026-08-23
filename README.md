@@ -9,9 +9,10 @@ MIRROR-Rad is an evidence-grounded clinical NLP application that audits whether 
 ## What is included
 
 - Fine-tuned BioClinicalBERT three-way NLI for `ENTAILED`, `CONTRADICTED`, and `UNSUPPORTED` claims.
-- Reciprocal candidate-to-source and source-to-candidate evidence retrieval.
-- Explicit checks for negation, laterality, anatomy, severity, temporal status, measurements, uncertainty, and entity substitution.
-- Learned claim-level signal fusion, post-hoc calibration, abstention, and report-level review routing.
+- Reciprocal candidate-to-source and source-to-candidate evidence retrieval with both raw and clinical-slot-masked TF-IDF matching.
+- Entity-bound semantic-delta checks for negation, laterality, anatomy, severity, temporal status, measurements, device identity, device position, uncertainty, and entity substitution.
+- BioClinicalBERT continued adaptation on patient-disjoint ReXErr training roles with Open-I replay; gradient training, fusion fitting, calibration, and adaptation evaluation remain separate.
+- Multi-domain learned claim fusion, held-out calibration, abstention, count-aware error-mass aggregation, and complete-report review routing.
 - Single-report auditing, guided live examples, CSV/JSON/JSONL dataset upload, bounded batch analysis, and CSV/JSON assurance exports.
 - Aggregate evaluation evidence without raw reports, generated summaries, claims, study identifiers, or row-level prediction ledgers.
 - Fail-closed startup validation for application code, model weights, tokenizer assets, calibration, fusion, routing, and evaluation evidence.
@@ -60,13 +61,18 @@ Open `http://127.0.0.1:8501/`. CPU inference is supported. The application seria
 
 ## Evidence and interpretation
 
-The bundled aggregate ledger retains the measured evaluation populations, metrics, confidence intervals, baselines, ablations, and validity boundaries while intentionally excluding dataset rows and report text. The headline controlled evaluation reports macro-F1 0.9505, contradiction recall 0.9785, unsupported-claim recall 0.9412, high-risk unsafe recall 0.9928, and expected calibration error 0.0281. These values come from controlled counterfactual claims and must not be interpreted as hospital performance.
+The bundled aggregate ledger retains the measured evaluation populations, metrics, confidence intervals, baselines, ablations, and validity boundaries while intentionally excluding dataset rows and report text. The expert-family-quarantined controlled evaluation reports macro-F1 **0.9623**, contradiction recall **0.9538**, unsupported-claim recall **1.0000**, high-risk unsafe recall **0.9928**, and expected calibration error **0.0189**. These values come from controlled counterfactual claims and must not be interpreted as overall accuracy or hospital performance.
 
 External evaluation is deliberately separated:
 
-- ReXErr measures transfer to clinician-designed synthetic/silver semantic errors.
-- RadEvalX measures report-level ranking against a small two-radiologist consensus benchmark.
+- The final patient-disjoint adaptation-set rerun reports macro-F1 **0.9010**, contradiction recall **0.9150**, unsupported recall **0.8098**, and ECE **0.0077**. The original single-open result was retained, but a later corrective multi-domain fusion fit means the displayed final-artifact rerun is iterative evidence rather than a new pristine holdout.
+- ReXErr measures transfer to clinician-designed synthetic/silver semantic errors. The contextual sentence analysis reports AUROC **0.9943**, AUPRC **0.9914**, recall **0.9811**, and specificity **0.9698**. Its stricter exact-pair-decontaminated slice reports AUROC **0.9911**, AUPRC **0.9885**, recall **0.9817**, and specificity **0.9506**.
+- On the strict unseen-pair ReXErr slice, recall is **0.9506** for device-name changes, **0.9976** for device-position changes, and **0.9754** for severity changes—the categories that motivated the upgrade.
+- Complete-report ReXErr routing reports AUROC **0.9438**, AUPRC **0.9991**, recall **0.9574**, and specificity **0.7059**. Its separate matched-identity false-alert rate is **0.1211**.
+- RadEvalX measures report-level ranking against a small two-radiologist consensus benchmark. The declared count-aware score reports AUROC **0.6740**, AUPRC **0.7572**, and captures **29.8%** of significant error burden at a 20% review budget. CheXbert reports AUROC **0.7415** on the same cohort; the paired MIRROR-Rad-minus-CheXbert AUROC interval is **−0.2154 to 0.0723**, so the apparent difference is not statistically resolved on 100 reports.
 - Natural claim-level accuracy, clinical effectiveness, and multi-site generalization are not claimed.
+
+The external ReXErr and RadEvalX results are explicitly labelled iterative because earlier development inspected those benchmarks. MIRROR-Rad does not hide the weaker RadEvalX result or describe the controlled score as “97% overall accuracy.”
 
 ## Deployment contents
 
@@ -75,4 +81,3 @@ Only operational files are published: the Streamlit entrypoint and theme, Python
 ## License and upstream model
 
 Project code is provided under the MIT License. The included checkpoint is fine-tuned from [`emilyalsentzer/Bio_ClinicalBERT`](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT), whose upstream model repository declares the MIT License. See `THIRD_PARTY_NOTICES.md` for attribution and distribution boundaries. No source dataset is distributed in this repository.
-

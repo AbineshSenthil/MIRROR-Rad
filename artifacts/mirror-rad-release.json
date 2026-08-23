@@ -1,0 +1,92 @@
+{
+  "assets": {
+    "application": {
+      "bytes": 128544,
+      "kind": "file",
+      "path": "app.py",
+      "sha256": "a9b2dfe6f096c2cc802accca7ed4b4c201b887fde9f1e416ef02ce389ebb7e33"
+    },
+    "engine": {
+      "bytes": 273506,
+      "kind": "directory",
+      "path": "src/radtrace",
+      "sha256": "6d4e19dec08a25f87fa23d346965f8659357a55bc5aed223c5a4f99ef38ef9a1"
+    },
+    "evaluation_ledger": {
+      "bytes": 181902,
+      "kind": "file",
+      "path": "reports/public/evaluation_summary.json",
+      "sha256": "79df96d79a87593f4e329ebb07723e9fe6230eb563da8df13798b935d00b2323"
+    },
+    "fusion_model": {
+      "bytes": 5311,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-system/tuned_verifier/fusion_model.pkl",
+      "sha256": "48eeb2d8683164ef39aa06c3288773047d76537e842a34abf8bee500b8fc70de"
+    },
+    "nli_calibration": {
+      "bytes": 245,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/calibration.json",
+      "sha256": "b3ac7bf553911fefd85e8a386a32c8bcea54ef4f2c660036abd9771e4dbaadb7"
+    },
+    "nli_config": {
+      "bytes": 805,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/config.json",
+      "sha256": "1b12bbbed9136e838172f5c6be6c2e2fe42a5ee3259c7c16af7a4a809ff1bbc2"
+    },
+    "nli_special_tokens": {
+      "bytes": 732,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/special_tokens_map.json",
+      "sha256": "5aa43c2f985a25296d5a5ce621c2f77376ca8091a47993c492fd5460b895b140"
+    },
+    "nli_tokenizer": {
+      "bytes": 669020,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/tokenizer.json",
+      "sha256": "0e4fadb17e964f8f225a29b3c0203afbae9a46f9137a9e4c3d97787157dc4703"
+    },
+    "nli_tokenizer_config": {
+      "bytes": 1470,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/tokenizer_config.json",
+      "sha256": "3e9c02e0e2d41523477c0c7fb045c5ae6af7d27b49602cf3abaf971a12e564cc"
+    },
+    "nli_vocab": {
+      "bytes": 213450,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/vocab.txt",
+      "sha256": "eeaa9875b23b04b4c54ef759d03db9d1ba1554838f8fb26c5d96fa551df93d02"
+    },
+    "nli_weights": {
+      "bytes": 433273844,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-clinical-nli/best/model.safetensors",
+      "sha256": "a84196c7844bc2b0b0eed8cf0f08a582bba38cf999b9e06420ee779bc22f6d30"
+    },
+    "report_router": {
+      "bytes": 4380,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-risk-calibrator.pkl",
+      "sha256": "29c08be27ed34e0ec91e0865ef1fb8f779eb706ef4b182016943a003969a06b6"
+    },
+    "requirements_lock": {
+      "bytes": 1217,
+      "kind": "file",
+      "path": "requirements-lock.txt",
+      "sha256": "5670dc2ad4ebd7ec86badf6f413f5e7aac16fbe3e150f3c4daa7ae2249f227cf"
+    },
+    "verifier_config": {
+      "bytes": 717,
+      "kind": "file",
+      "path": "artifacts/mirror-rad-system/tuned_verifier/verifier_config.json",
+      "sha256": "5558af60e81f070f7e2965a80510cf266529fcbac49d594a44e21d2806f87425"
+    }
+  },
+  "created_at_utc": "2026-08-23T18:34:26.747622+00:00",
+  "project": "MIRROR-Rad",
+  "release_id": "87987dec6f2ba8db21f6",
+  "schema": "mirror-rad.release.v1"
+}

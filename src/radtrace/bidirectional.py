@@ -51,6 +51,13 @@ class DirectionRisk:
     claim_count: int
     alerted_claims: int
     high_priority_claims: int
+    # Count-aware evidence is intentionally kept separate from ``score``.
+    # ``score`` protects a single dangerous claim, while these quantities
+    # preserve cumulative burden for review-queue ranking.
+    error_mass: float = 0.0
+    mean_error_probability: float = 0.0
+    noisy_or_error_probability: float = 0.0
+    high_priority_error_mass: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -61,6 +68,7 @@ def summarize_direction(audit: AuditResult, direction: str) -> DirectionRisk:
 
     if not audit.claims:
         return DirectionRisk(direction, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+    unweighted = [claim_error_probability(claim) for claim in audit.claims]
     weighted = [
         claim_error_probability(claim) * _TIER_WEIGHT.get(claim.risk_tier, 0.72)
         for claim in audit.claims
@@ -78,6 +86,13 @@ def summarize_direction(audit: AuditResult, direction: str) -> DirectionRisk:
         and claim.risk_tier in (RiskTier.HIGH, RiskTier.CRITICAL)
         for claim in audit.claims
     )
+    error_mass = sum(unweighted)
+    noisy_or = 1.0 - math.prod(1.0 - min(0.999999, value) for value in unweighted)
+    high_priority_mass = sum(
+        probability
+        for probability, claim in zip(unweighted, audit.claims, strict=True)
+        if claim.risk_tier in (RiskTier.HIGH, RiskTier.CRITICAL)
+    )
     return DirectionRisk(
         direction=direction,
         score=score,
@@ -87,6 +102,10 @@ def summarize_direction(audit: AuditResult, direction: str) -> DirectionRisk:
         claim_count=len(audit.claims),
         alerted_claims=alerts,
         high_priority_claims=high_priority,
+        error_mass=error_mass,
+        mean_error_probability=error_mass / len(unweighted),
+        noisy_or_error_probability=noisy_or,
+        high_priority_error_mass=high_priority_mass,
     )
 
 
@@ -99,6 +118,14 @@ class ReportRiskFeatures:
     commission_alert_fraction: float
     omission_alert_fraction: float
     length_ratio_deviation: float
+    commission_error_mass: float = 0.0
+    omission_error_mass: float = 0.0
+    commission_mean_error_probability: float = 0.0
+    omission_mean_error_probability: float = 0.0
+    commission_noisy_or: float = 0.0
+    omission_noisy_or: float = 0.0
+    commission_high_priority_mass: float = 0.0
+    omission_high_priority_mass: float = 0.0
 
     ORDER: ClassVar[tuple[str, ...]] = (
         "commission_risk",
@@ -108,6 +135,14 @@ class ReportRiskFeatures:
         "commission_alert_fraction",
         "omission_alert_fraction",
         "length_ratio_deviation",
+        "commission_error_mass",
+        "omission_error_mass",
+        "commission_mean_error_probability",
+        "omission_mean_error_probability",
+        "commission_noisy_or",
+        "omission_noisy_or",
+        "commission_high_priority_mass",
+        "omission_high_priority_mass",
     )
 
     def vector(self) -> list[float]:
@@ -127,6 +162,7 @@ class BidirectionalAuditResult:
     omission: DirectionRisk
     risk_features: ReportRiskFeatures
     raw_risk: float
+    count_aware_risk: float
     aligned_risk: float
     alignment_applied: bool
     review_priority: str
@@ -142,6 +178,7 @@ class BidirectionalAuditResult:
             "omission": self.omission.to_dict(),
             "risk_features": self.risk_features.to_dict(),
             "raw_risk": self.raw_risk,
+            "count_aware_risk": self.count_aware_risk,
             "aligned_risk": self.aligned_risk,
             "alignment_applied": self.alignment_applied,
             "review_priority": self.review_priority,
@@ -164,6 +201,32 @@ def combine_direction_risk(commission_risk: float, omission_risk: float) -> floa
             + 0.15 * float(commission_risk) * float(omission_risk),
         ),
     )
+
+
+def combine_count_aware_risk(features: ReportRiskFeatures) -> float:
+    """Combine single-claim safety and cumulative factual-error burden.
+
+    The transformation is fixed and monotonic in every component.  It was
+    introduced to avoid the old max/top-three bottleneck: a report with several
+    moderately suspicious omissions should rank above one isolated low-risk
+    alert.  It is an ordinal review score, not a calibrated clinical
+    probability.
+    """
+
+    total_mass = max(0.0, features.commission_error_mass) + max(
+        0.0, features.omission_error_mass
+    )
+    absolute_mass = 1.0 - math.exp(-0.45 * total_mass)
+    mean_mass = min(
+        1.0,
+        (
+            max(0.0, features.commission_mean_error_probability)
+            + max(0.0, features.omission_mean_error_probability)
+        )
+        / 2.0,
+    )
+    noisy_or = max(features.commission_noisy_or, features.omission_noisy_or)
+    return max(0.0, min(1.0, 0.55 * absolute_mass + 0.30 * mean_mass + 0.15 * noisy_or))
 
 
 class ReportRiskCalibrator:
@@ -393,6 +456,14 @@ class BidirectionalAuditor:
                     commission_alert_fraction=commission.alert_fraction,
                     omission_alert_fraction=omission.alert_fraction,
                     length_ratio_deviation=length_deviation,
+                    commission_error_mass=commission.error_mass,
+                    omission_error_mass=omission.error_mass,
+                    commission_mean_error_probability=commission.mean_error_probability,
+                    omission_mean_error_probability=omission.mean_error_probability,
+                    commission_noisy_or=commission.noisy_or_error_probability,
+                    omission_noisy_or=omission.noisy_or_error_probability,
+                    commission_high_priority_mass=commission.high_priority_error_mass,
+                    omission_high_priority_mass=omission.high_priority_error_mass,
                 )
             )
             summaries.append((commission, omission))
@@ -408,6 +479,7 @@ class BidirectionalAuditor:
         ):
             commission, omission = summaries[index]
             raw = combine_direction_risk(commission.score, omission.score)
+            count_aware = combine_count_aware_risk(feature)
             aligned = float(calibrated[index]) if calibrated[index] is not None else raw
             if aligned >= self.high_priority_threshold:
                 priority = "HIGH"
@@ -425,6 +497,7 @@ class BidirectionalAuditor:
                     omission=omission,
                     risk_features=feature,
                     raw_risk=raw,
+                    count_aware_risk=count_aware,
                     aligned_risk=aligned,
                     alignment_applied=calibrated[index] is not None,
                     review_priority=priority,

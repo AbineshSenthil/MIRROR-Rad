@@ -47,14 +47,17 @@ class RadTraceVerifier:
     """
 
     ARTIFACT_VERSION = 1
-    FEATURE_SCHEMA_VERSION = "sentence-plus-global-nli-v2"
+    FEATURE_SCHEMA_VERSION = "sentence-plus-global-nli-v3-semantic-delta"
     DEFAULT_RULE_OVERRIDE_THRESHOLDS: ClassVar[dict[str, float]] = {
         "negation_mismatch": 0.30,
         "laterality_mismatch": 0.30,
+        "anatomy_mismatch": 0.55,
         "measurement_mismatch": 0.30,
         "severity_mismatch": 0.55,
         "temporal_mismatch": 0.55,
         "entity_substitution_mismatch": 0.50,
+        "device_identity_mismatch": 0.50,
+        "device_position_mismatch": 0.50,
     }
 
     def __init__(
@@ -321,6 +324,15 @@ class RadTraceVerifier:
             {
                 "lexical_jaccard": best_assessment.features.get("lexical_jaccard", 0.0),
                 "retrieval_top_score": evidence[0].score if evidence else 0.0,
+                "retrieval_raw_top_score": evidence[0].raw_score if evidence else 0.0,
+                "retrieval_slot_masked_top_score": (
+                    evidence[0].slot_masked_score if evidence else 0.0
+                ),
+                "retrieval_slot_gain": (
+                    max(0.0, evidence[0].slot_masked_score - evidence[0].raw_score)
+                    if evidence
+                    else 0.0
+                ),
                 "retrieval_second_score": evidence[1].score if len(evidence) > 1 else 0.0,
                 "retrieval_margin": evidence[0].score - evidence[1].score if len(evidence) > 1 else (evidence[0].score if evidence else 0.0),
                 "evidence_count": float(len(evidence)),
@@ -338,7 +350,8 @@ class RadTraceVerifier:
         for name in (
             "negation_mismatch", "laterality_mismatch", "anatomy_mismatch",
             "severity_mismatch", "temporal_mismatch", "measurement_mismatch",
-            "entity_substitution_mismatch",
+            "entity_substitution_mismatch", "device_identity_mismatch",
+            "device_position_mismatch",
         ):
             features[f"any_rule_{name}"] = max(
                 (item.features.get(name, 0.0) * (0.35 + 0.65 * match.score)
@@ -383,9 +396,21 @@ class RadTraceVerifier:
         elif label == Label.CONTRADICTED and not error_types:
             if analysis.features.get("any_rule_negation_mismatch", 0.0) >= self.rule_override_thresholds["negation_mismatch"]:
                 error_types = [ErrorType.NEGATION]
-            elif analysis.features.get("any_rule_laterality_mismatch", 0.0) >= self.rule_override_thresholds["laterality_mismatch"]:
+            elif (
+                analysis.features.get("any_rule_laterality_mismatch", 0.0)
+                >= self.rule_override_thresholds["laterality_mismatch"]
+                or analysis.features.get("any_rule_anatomy_mismatch", 0.0)
+                >= self.rule_override_thresholds["anatomy_mismatch"]
+            ):
                 error_types = [ErrorType.LATERALITY]
-            elif analysis.features.get("any_rule_measurement_mismatch", 0.0) >= self.rule_override_thresholds["measurement_mismatch"]:
+            elif (
+                analysis.features.get("any_rule_device_identity_mismatch", 0.0)
+                >= self.rule_override_thresholds["device_identity_mismatch"]
+                or analysis.features.get("any_rule_device_position_mismatch", 0.0)
+                >= self.rule_override_thresholds["device_position_mismatch"]
+                or analysis.features.get("any_rule_measurement_mismatch", 0.0)
+                >= self.rule_override_thresholds["measurement_mismatch"]
+            ):
                 error_types = [ErrorType.MEASUREMENT]
             elif analysis.features.get("any_rule_severity_mismatch", 0.0) >= self.rule_override_thresholds["severity_mismatch"]:
                 error_types = [ErrorType.SEVERITY]
@@ -429,8 +454,11 @@ class RadTraceVerifier:
         strongest_conflict = max(
             features.get("any_rule_negation_mismatch", 0.0),
             features.get("any_rule_laterality_mismatch", 0.0),
-            features.get("any_rule_anatomy_mismatch", 0.0),
+            0.90 * features.get("any_rule_anatomy_mismatch", 0.0),
             features.get("any_rule_measurement_mismatch", 0.0),
+            features.get("any_rule_device_identity_mismatch", 0.0),
+            features.get("any_rule_device_position_mismatch", 0.0),
+            0.85 * features.get("any_rule_entity_substitution_mismatch", 0.0),
             0.75 * features.get("any_rule_temporal_mismatch", 0.0),
             0.70 * features.get("any_rule_severity_mismatch", 0.0),
         )
@@ -474,9 +502,24 @@ class RadTraceVerifier:
         ]
         if not triggered:
             return {key: float(value) for key, value in probabilities.items()}
+        contradicted_probability = float(probabilities.get(Label.CONTRADICTED.value, 0.0))
+        unsupported_probability = float(probabilities.get(Label.UNSUPPORTED.value, 0.0))
+        if (
+            self.fusion_model is not None
+            and self.fusion_model.is_fitted
+            and unsupported_probability >= 0.45
+            and unsupported_probability >= contradicted_probability + 0.05
+        ):
+            # A structural mismatch proves that the claim is unsafe, but it does
+            # not by itself distinguish a contradiction from an unsupported
+            # addition. Preserve a confident learned unsupported decision so a
+            # device/addition rule cannot silently change the error topology.
+            # When learned fusion is unavailable, deterministic rules remain the
+            # fail-safe path for explicit substitutions.
+            return {key: float(value) for key, value in probabilities.items()}
         conflict = max(triggered)
         target = max(
-            float(probabilities.get(Label.CONTRADICTED.value, 0.0)),
+            contradicted_probability,
             min(0.97, 0.62 + 0.35 * conflict),
         )
         other_labels = (Label.ENTAILED.value, Label.UNSUPPORTED.value)
@@ -516,6 +559,19 @@ class RadTraceVerifier:
         if label == Label.ENTAILED:
             return f"The claim is supported by retrieved Findings evidence (similarity {evidence.score:.2f})."
         if label == Label.CONTRADICTED:
+            identity_pairs = analysis.assessment.details.get("device_identity_mismatch_pairs", [])
+            if identity_pairs:
+                changed = ", ".join(f"{left} vs {right}" for left, right in identity_pairs[:2])
+                return f"The claim changes the device identity relative to the evidence ({changed})."
+            position_changes = analysis.assessment.details.get("device_position_mismatches", [])
+            if position_changes:
+                first = position_changes[0]
+                claim_positions = ", ".join(first.get("claim_positions", []))
+                evidence_positions = ", ".join(first.get("evidence_positions", []))
+                return (
+                    "The claim changes a device position relative to the evidence "
+                    f"({claim_positions} vs {evidence_positions})."
+                )
             reason = ", ".join(violation_names) if violation_names else "a semantic conflict"
             return f"The claim conflicts with the retrieved evidence through {reason}."
         if label == Label.UNSUPPORTED:

@@ -24,10 +24,10 @@ from .product import (
 from .release import validate_release_manifest
 from .verifier import RadTraceVerifier
 
-DEFAULT_ARTIFACT = PROJECT_ROOT / "artifacts" / "vigil-rad-system" / "tuned_verifier"
-DEFAULT_CALIBRATOR = PROJECT_ROOT / "artifacts" / "vigil-rad-risk-calibrator.pkl"
+DEFAULT_ARTIFACT = PROJECT_ROOT / "artifacts" / "mirror-rad-system" / "tuned_verifier"
+DEFAULT_CALIBRATOR = PROJECT_ROOT / "artifacts" / "mirror-rad-risk-calibrator.pkl"
 DEFAULT_LEDGER = PROJECT_ROOT / "reports" / "generated" / "evaluation_summary.json"
-DEFAULT_RELEASE_MANIFEST = PROJECT_ROOT / "artifacts" / "vigil-rad-release.json"
+DEFAULT_RELEASE_MANIFEST = PROJECT_ROOT / "artifacts" / "mirror-rad-release.json"
 SCRIPT_COMMANDS = {
     "prepare": "prepare_data.py",
     "train-transformer": "train_transformer.py",
@@ -97,7 +97,7 @@ def _audit(args: argparse.Namespace) -> int:
     calibrator = ReportRiskCalibrator.load(args.calibrator)
     result = BidirectionalAuditor(verifier, calibrator=calibrator).audit(reference, candidate)
     payload = {
-        "schema": "vigil-rad.bidirectional-audit.v1",
+        "schema": "mirror-rad.bidirectional-audit.v1",
         "release_id": release.get("release_id"),
         "neural_fallback_used": False,
         "audit": result.to_dict(),

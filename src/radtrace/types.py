@@ -109,6 +109,8 @@ class EvidenceMatch:
     text: str
     score: float
     rank: int = 1
+    raw_score: float = 0.0
+    slot_masked_score: float = 0.0
     nli_probabilities: dict[str, float] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -121,6 +123,8 @@ class EvidenceMatch:
             text=str(value["text"]),
             score=float(value.get("score", 0.0)),
             rank=int(value.get("rank", 1)),
+            raw_score=float(value.get("raw_score", value.get("score", 0.0))),
+            slot_masked_score=float(value.get("slot_masked_score", 0.0)),
             nli_probabilities={str(k): float(v) for k, v in value.get("nli_probabilities", {}).items()},
         )
 

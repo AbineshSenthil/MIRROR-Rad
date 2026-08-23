@@ -21,6 +21,83 @@ _CLINICAL_ALIASES = {
     "enlarged": "enlargement",
 }
 
+# These masks are used only for evidence retrieval.  The original text is
+# always retained for NLI and clinical-rule comparison.  Masking the value of a
+# mutable clinical slot prevents a contradiction (for example PICC -> chest
+# tube or mild -> moderate) from moving its true counterpart out of the
+# top-k evidence set merely because the changed token no longer overlaps.
+_SLOT_TOKEN_GROUPS: dict[str, frozenset[str]] = {
+    "device": frozenset(
+        {
+            "aicd", "catheter", "catheters", "central", "defibrillator",
+            "dobhoff", "drain", "drains", "ett", "foley", "icd", "line",
+            "lines", "ng", "pacemaker", "picc", "pigtail", "port",
+            "swan-ganz", "stent", "thoracostomy", "tracheostomy", "tube",
+            "tubes", "vascular",
+        }
+    ),
+    "position": frozenset(
+        {
+            "above", "below", "carina", "cavoatrial", "distal", "duodenum",
+            "esophagus", "gastric", "gastroesophageal", "ivc", "junction",
+            "mainstem", "mid", "proximal", "retracted", "stomach", "svc",
+            "tip", "upper", "lower", "atrium", "ventricle",
+        }
+    ),
+    "severity": frozenset(
+        {
+            "extensive", "large", "marked", "massive", "mild", "mildly",
+            "minimal", "moderate", "moderately", "severe", "severely",
+            "slight", "slightly", "small", "substantial", "tiny", "trace",
+        }
+    ),
+    "location": frozenset(
+        {
+            "abdomen", "anterior", "apex", "apical", "base", "basilar",
+            "bilateral", "cervical", "chest", "costophrenic", "hemidiaphragm",
+            "hilar", "inferior", "lateral", "left", "lingula", "lumbar",
+            "medial", "neck", "pelvis", "perihilar", "posterior", "right",
+            "retrocardiac", "superior", "thoracic",
+        }
+    ),
+    "temporal": frozenset(
+        {
+            "acute", "chronic", "decreased", "decreasing", "developed",
+            "improved", "improving", "increased", "increasing", "interval",
+            "new", "persistent", "progressed", "progressing", "resolved",
+            "resolving", "stable", "unchanged", "worsened", "worsening",
+        }
+    ),
+    "polarity": frozenset({"absent", "negative", "no", "not", "without"}),
+}
+
+
+def mask_clinical_slots(text: str) -> list[str]:
+    """Return retrieval tokens with mutable clinical values type-masked.
+
+    Numeric values are masked separately from measurement units.  Consecutive
+    repetitions of the same mask collapse to one token so multi-word device
+    names (``central venous catheter``) remain comparable with abbreviations
+    such as ``PICC`` without altering the text seen by downstream models.
+    """
+
+    reverse = {
+        token: f"slot_{group}"
+        for group, values in _SLOT_TOKEN_GROUPS.items()
+        for token in values
+    }
+    output: list[str] = []
+    for token in tokenize(text):
+        if re.fullmatch(r"\d+(?:\.\d+)?", token):
+            value = "slot_number"
+        elif token in {"cm", "mm", "millimeter", "millimeters", "centimeter", "centimeters"}:
+            value = "slot_unit"
+        else:
+            value = reverse.get(token, token)
+        if not output or output[-1] != value:
+            output.append(value)
+    return output
+
 
 def split_sentences(text: str) -> list[str]:
     """Segment clinical prose without case-sensitive boundary assumptions.
@@ -45,13 +122,16 @@ def tokenize(text: str) -> list[str]:
     return tokens
 
 
-def _features(text: str, ngram_range: tuple[int, int]) -> list[str]:
-    tokens = tokenize(text)
+def _ngram_features(tokens: Sequence[str], ngram_range: tuple[int, int]) -> list[str]:
     values: list[str] = []
     lower, upper = ngram_range
     for n in range(max(1, lower), max(1, upper) + 1):
         values.extend("_".join(tokens[i : i + n]) for i in range(len(tokens) - n + 1))
     return values
+
+
+def _features(text: str, ngram_range: tuple[int, int]) -> list[str]:
+    return _ngram_features(tokenize(text), ngram_range)
 
 
 def _cosine(left: dict[str, float], right: dict[str, float]) -> float:
@@ -98,8 +178,13 @@ class TfidfEvidenceRetriever:
 
         document_terms = [_features(sentence, self.ngram_range) for sentence in sentences]
         query_terms = _features(query, self.ngram_range)
+        masked_document_terms = [
+            _ngram_features(mask_clinical_slots(sentence), self.ngram_range)
+            for sentence in sentences
+        ]
+        masked_query_terms = _ngram_features(mask_clinical_slots(query), self.ngram_range)
         document_frequency: Counter[str] = Counter()
-        for terms in document_terms:
+        for terms in [*document_terms, *masked_document_terms]:
             document_frequency.update(set(terms))
         count = len(sentences)
         idf = {
@@ -116,10 +201,17 @@ class TfidfEvidenceRetriever:
             }
 
         query_vector = vector(query_terms)
+        masked_query_vector = vector(masked_query_terms)
         query_tokens = set(tokenize(query))
-        scored: list[tuple[float, int, str]] = []
-        for index, (sentence, terms) in enumerate(zip(sentences, document_terms)):
-            score = _cosine(query_vector, vector(terms))
+        scored: list[tuple[float, int, str, float, float]] = []
+        for index, (sentence, terms, masked_terms) in enumerate(
+            zip(sentences, document_terms, masked_document_terms, strict=True)
+        ):
+            raw_score = _cosine(query_vector, vector(terms))
+            masked_score = _cosine(masked_query_vector, vector(masked_terms))
+            # Keep the raw route authoritative when it is stronger.  The
+            # slightly discounted masked route only rescues slot substitutions.
+            score = max(raw_score, 0.97 * masked_score)
             # Small clinically useful tie-breaker for exact measurements and
             # polarity/laterality terms; it never dominates TF-IDF similarity.
             sentence_tokens = set(tokenize(sentence))
@@ -129,13 +221,22 @@ class TfidfEvidenceRetriever:
             }
             score = min(1.0, score + 0.01 * len(exact_markers))
             if score >= self.min_score:
-                scored.append((score, index, sentence))
+                scored.append((score, index, sentence, raw_score, masked_score))
 
         scored.sort(key=lambda item: (-item[0], item[1]))
         limit = min(int(top_k or self.top_k), len(scored))
         return [
-            EvidenceMatch(sentence_index=index, text=sentence, score=float(score), rank=rank)
-            for rank, (score, index, sentence) in enumerate(scored[:limit], start=1)
+            EvidenceMatch(
+                sentence_index=index,
+                text=sentence,
+                score=float(score),
+                rank=rank,
+                raw_score=float(raw_score),
+                slot_masked_score=float(masked_score),
+            )
+            for rank, (score, index, sentence, raw_score, masked_score) in enumerate(
+                scored[:limit], start=1
+            )
         ]
 
     def batch_retrieve(

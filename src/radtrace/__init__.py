@@ -7,6 +7,4 @@ try:
 except ImportError:  # Allows data-only utilities before optional ML dependencies are installed.
     RadTraceVerifier = None  # type: ignore[assignment]
 
-VigilRadVerifier = RadTraceVerifier
-
-__all__ = ["RadTraceVerifier", "VigilRadVerifier", "__version__"]
+__all__ = ["RadTraceVerifier", "__version__"]

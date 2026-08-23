@@ -204,3 +204,78 @@ def clustered_bootstrap_intervals(
             "samples": len(values),
         }
     return output
+
+
+def paired_bootstrap_differences(
+    labels: Sequence[int | bool],
+    candidate_scores: Sequence[float],
+    comparator_scores: Sequence[float],
+    metrics: Mapping[str, Callable[[Sequence[int], Sequence[float]], float | None]],
+    *,
+    iterations: int = 5000,
+    seed: int = 42,
+) -> dict[str, dict[str, float | int | None]]:
+    """Bootstrap paired metric differences on the same evaluation cases.
+
+    A positive estimate means the candidate score is higher than the
+    comparator.  Resampling paired rows—rather than bootstrapping each model
+    separately—preserves their case-level correlation and gives the honest
+    uncertainty needed for small external cohorts such as RadEvalX.
+    """
+
+    if not (
+        len(labels) == len(candidate_scores) == len(comparator_scores)
+    ):
+        raise ValueError("labels and both score vectors must have equal length")
+    if not labels:
+        raise ValueError("paired bootstrap requires at least one row")
+    targets = _as_binary(labels)
+    left = [float(value) for value in candidate_scores]
+    right = [float(value) for value in comparator_scores]
+    rng = random.Random(seed)
+    distributions: dict[str, list[float]] = {name: [] for name in metrics}
+    size = len(targets)
+    for _ in range(max(1, iterations)):
+        indices = [rng.randrange(size) for _ in range(size)]
+        sample_labels = [targets[index] for index in indices]
+        sample_left = [left[index] for index in indices]
+        sample_right = [right[index] for index in indices]
+        for name, function in metrics.items():
+            try:
+                left_value = function(sample_labels, sample_left)
+                right_value = function(sample_labels, sample_right)
+            except (ValueError, ZeroDivisionError):
+                continue
+            if left_value is None or right_value is None:
+                continue
+            difference = float(left_value) - float(right_value)
+            if math.isfinite(difference):
+                distributions[name].append(difference)
+
+    output: dict[str, dict[str, float | int | None]] = {}
+    for name, function in metrics.items():
+        candidate_value = function(targets, left)
+        comparator_value = function(targets, right)
+        estimate = (
+            float(candidate_value) - float(comparator_value)
+            if candidate_value is not None and comparator_value is not None
+            else None
+        )
+        values = sorted(distributions[name])
+        if not values:
+            output[name] = {
+                "estimate": estimate,
+                "lower": None,
+                "upper": None,
+                "samples": 0,
+            }
+            continue
+        lower_index = max(0, min(len(values) - 1, round(0.025 * (len(values) - 1))))
+        upper_index = max(0, min(len(values) - 1, round(0.975 * (len(values) - 1))))
+        output[name] = {
+            "estimate": estimate,
+            "lower": values[lower_index],
+            "upper": values[upper_index],
+            "samples": len(values),
+        }
+    return output
