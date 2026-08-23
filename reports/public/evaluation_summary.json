@@ -1,0 +1,2678 @@
+{
+  "bootstrap_iterations": 1000,
+  "claim_boundary": "Deployment-ready research software for text-to-text integrity auditing; not a diagnostic, image-reading, autonomous clinical, or patient-outcome system.",
+  "completion_status": "complete",
+  "controlled": {
+    "caveats": [
+      "The no-structured-rules model uses only TF-IDF/lexical retrieval features.",
+      "Rules-only probabilities are fixed confidence scores and are not calibrated estimates.",
+      "Controlled mutations are synthetic; entity substitutions may be clinically ambiguous."
+    ],
+    "elapsed_seconds": 21.961690099997213,
+    "evaluation": "data\\processed\\expert_excluded\\claims_test.jsonl",
+    "evaluation_rows": 2272,
+    "label_counts": {
+      "CONTRADICTED": 606,
+      "ENTAILED": 833,
+      "UNSUPPORTED": 833
+    },
+    "mode": "frozen_final_test",
+    "nli_batch_size": 64,
+    "nli_model": "artifacts\\vigil-rad-clinical-nli\\best",
+    "schema_version": "1.0",
+    "selected_thresholds": {
+      "entity_substitution_mismatch": 0.6,
+      "laterality_mismatch": 0.5,
+      "measurement_mismatch": 0.3,
+      "negation_mismatch": 0.3,
+      "severity_mismatch": 0.55,
+      "temporal_mismatch": 0.45
+    },
+    "selection_report": null,
+    "train": null,
+    "variants": {
+      "full_system_no_abstention": {
+        "calibration": {
+          "brier": 0.0657692766486666,
+          "ece": 0.028133677704125504,
+          "mean_confidence": 0.9810386072815924,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.9529049295774648,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 593,
+              "ENTAILED": 11,
+              "REVIEW": 0,
+              "UNSUPPORTED": 2
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 44,
+              "ENTAILED": 788,
+              "REVIEW": 0,
+              "UNSUPPORTED": 1
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 49,
+              "ENTAILED": 0,
+              "REVIEW": 0,
+              "UNSUPPORTED": 784
+            }
+          },
+          "macro_f1": 0.9505147218081516,
+          "mcc": 0.9303440419616303,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.9179566563467493,
+              "fn": 13,
+              "fp": 93,
+              "precision": 0.8644314868804664,
+              "recall": 0.9785478547854786,
+              "support": 606,
+              "tp": 593
+            },
+            "ENTAILED": {
+              "f1": 0.9656862745098039,
+              "fn": 45,
+              "fp": 11,
+              "precision": 0.986232790988736,
+              "recall": 0.9459783913565426,
+              "support": 833,
+              "tp": 788
+            },
+            "UNSUPPORTED": {
+              "f1": 0.9679012345679013,
+              "fn": 49,
+              "fp": 3,
+              "precision": 0.9961880559085133,
+              "recall": 0.9411764705882353,
+              "support": 833,
+              "tp": 784
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.9820036842851068,
+          "high_risk_fn": 10,
+          "high_risk_fnr": 0.0071633237822349575,
+          "high_risk_fp": 87,
+          "high_risk_precision": 0.9409368635437881,
+          "high_risk_recall": 0.9928366762177651,
+          "high_risk_tp": 1386,
+          "unsafe_auprc": 0.993733984569395
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.9516129032258065,
+            "contradiction_recall": 0.9354838709677419,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.975609756097561,
+            "contradiction_recall": 0.975609756097561,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 1.0,
+            "contradiction_recall": 1.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.9888579387186629,
+            "contradiction_recall": 0.9860724233983287,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.9459783913565426,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.9767441860465116,
+            "contradiction_recall": 0.9767441860465116,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.9830508474576272,
+            "contradiction_recall": 0.9830508474576272,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 0.9411764705882353,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.012795725516313746,
+          "mean_factual_precision": 0.34783635086343,
+          "mean_hallucination_rate": 0.6521636491365698,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      },
+      "full_system_risk_abstention": {
+        "calibration": {
+          "brier": 0.0657692766486666,
+          "ece": 0.028133677704125504,
+          "mean_confidence": 0.9810386072815924,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.9529049295774648,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 593,
+              "ENTAILED": 11,
+              "REVIEW": 0,
+              "UNSUPPORTED": 2
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 44,
+              "ENTAILED": 788,
+              "REVIEW": 0,
+              "UNSUPPORTED": 1
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 49,
+              "ENTAILED": 0,
+              "REVIEW": 0,
+              "UNSUPPORTED": 784
+            }
+          },
+          "macro_f1": 0.9505147218081516,
+          "mcc": 0.9303440419616303,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.9179566563467493,
+              "fn": 13,
+              "fp": 93,
+              "precision": 0.8644314868804664,
+              "recall": 0.9785478547854786,
+              "support": 606,
+              "tp": 593
+            },
+            "ENTAILED": {
+              "f1": 0.9656862745098039,
+              "fn": 45,
+              "fp": 11,
+              "precision": 0.986232790988736,
+              "recall": 0.9459783913565426,
+              "support": 833,
+              "tp": 788
+            },
+            "UNSUPPORTED": {
+              "f1": 0.9679012345679013,
+              "fn": 49,
+              "fp": 3,
+              "precision": 0.9961880559085133,
+              "recall": 0.9411764705882353,
+              "support": 833,
+              "tp": 784
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.9820036842851068,
+          "high_risk_fn": 10,
+          "high_risk_fnr": 0.0071633237822349575,
+          "high_risk_fp": 87,
+          "high_risk_precision": 0.9409368635437881,
+          "high_risk_recall": 0.9928366762177651,
+          "high_risk_tp": 1386,
+          "unsafe_auprc": 0.993733984569395
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.9516129032258065,
+            "contradiction_recall": 0.9354838709677419,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.975609756097561,
+            "contradiction_recall": 0.975609756097561,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 1.0,
+            "contradiction_recall": 1.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.9888579387186629,
+            "contradiction_recall": 0.9860724233983287,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.9459783913565426,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.9767441860465116,
+            "contradiction_recall": 0.9767441860465116,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.9830508474576272,
+            "contradiction_recall": 0.9830508474576272,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 0.9411764705882353,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.012795725516313746,
+          "mean_factual_precision": 0.34783635086343,
+          "mean_hallucination_rate": 0.6521636491365698,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      },
+      "learned_with_rules_calibrated_no_override": {
+        "calibration": {
+          "brier": 0.035231287608896406,
+          "ece": 0.008303099643645,
+          "mean_confidence": 0.9864773270272493,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.9784330985915493,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 589,
+              "ENTAILED": 15,
+              "REVIEW": 0,
+              "UNSUPPORTED": 2
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 31,
+              "ENTAILED": 801,
+              "REVIEW": 0,
+              "UNSUPPORTED": 1
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 0,
+              "ENTAILED": 0,
+              "REVIEW": 0,
+              "UNSUPPORTED": 833
+            }
+          },
+          "macro_f1": 0.9768495603636699,
+          "mcc": 0.9674243383148943,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.9608482871125611,
+              "fn": 17,
+              "fp": 31,
+              "precision": 0.95,
+              "recall": 0.971947194719472,
+              "support": 606,
+              "tp": 589
+            },
+            "ENTAILED": {
+              "f1": 0.9714978775015162,
+              "fn": 32,
+              "fp": 15,
+              "precision": 0.9816176470588235,
+              "recall": 0.9615846338535414,
+              "support": 833,
+              "tp": 801
+            },
+            "UNSUPPORTED": {
+              "f1": 0.9982025164769324,
+              "fn": 0,
+              "fp": 3,
+              "precision": 0.9964114832535885,
+              "recall": 1.0,
+              "support": 833,
+              "tp": 833
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.9815340909090909,
+          "high_risk_fn": 14,
+          "high_risk_fnr": 0.01002865329512894,
+          "high_risk_fp": 74,
+          "high_risk_precision": 0.9491758241758241,
+          "high_risk_recall": 0.9899713467048711,
+          "high_risk_tp": 1382,
+          "unsafe_auprc": 0.9937920302332656
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.9516129032258065,
+            "contradiction_recall": 0.9354838709677419,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.9512195121951219,
+            "contradiction_recall": 0.9512195121951219,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 1.0,
+            "contradiction_recall": 1.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.9832869080779945,
+            "contradiction_recall": 0.9805013927576601,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.9615846338535414,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.9767441860465116,
+            "contradiction_recall": 0.9767441860465116,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.9830508474576272,
+            "contradiction_recall": 0.9830508474576272,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 1.0,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.010031169810581577,
+          "mean_factual_precision": 0.35183692545223993,
+          "mean_hallucination_rate": 0.64816307454776,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      },
+      "learned_with_rules_uncalibrated": {
+        "calibration": {
+          "brier": 0.035091964005470704,
+          "ece": 0.01047582949000499,
+          "mean_confidence": 0.9891875898137421,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.9788732394366197,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 590,
+              "ENTAILED": 14,
+              "REVIEW": 0,
+              "UNSUPPORTED": 2
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 31,
+              "ENTAILED": 801,
+              "REVIEW": 0,
+              "UNSUPPORTED": 1
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 0,
+              "ENTAILED": 0,
+              "REVIEW": 0,
+              "UNSUPPORTED": 833
+            }
+          },
+          "macro_f1": 0.9773283622139172,
+          "mcc": 0.9681018912907973,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.9616951915240425,
+              "fn": 16,
+              "fp": 31,
+              "precision": 0.9500805152979066,
+              "recall": 0.9735973597359736,
+              "support": 606,
+              "tp": 590
+            },
+            "ENTAILED": {
+              "f1": 0.9720873786407767,
+              "fn": 32,
+              "fp": 14,
+              "precision": 0.9828220858895705,
+              "recall": 0.9615846338535414,
+              "support": 833,
+              "tp": 801
+            },
+            "UNSUPPORTED": {
+              "f1": 0.9982025164769324,
+              "fn": 0,
+              "fp": 3,
+              "precision": 0.9964114832535885,
+              "recall": 1.0,
+              "support": 833,
+              "tp": 833
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.982104814657009,
+          "high_risk_fn": 13,
+          "high_risk_fnr": 0.009312320916905445,
+          "high_risk_fp": 74,
+          "high_risk_precision": 0.9492107069320521,
+          "high_risk_recall": 0.9906876790830945,
+          "high_risk_tp": 1383,
+          "unsafe_auprc": 0.9949427237385505
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.9516129032258065,
+            "contradiction_recall": 0.9354838709677419,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.9634146341463414,
+            "contradiction_recall": 0.9634146341463414,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 1.0,
+            "contradiction_recall": 1.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.9832869080779945,
+            "contradiction_recall": 0.9805013927576601,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.9615846338535414,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.9767441860465116,
+            "contradiction_recall": 0.9767441860465116,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.9830508474576272,
+            "contradiction_recall": 0.9830508474576272,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 1.0,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.010236846486846488,
+          "mean_factual_precision": 0.351631248775975,
+          "mean_hallucination_rate": 0.6483687512240248,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      },
+      "learned_without_structured_rules": {
+        "calibration": {
+          "brier": 0.6123702762325094,
+          "ece": 0.09655521263250567,
+          "mean_confidence": 0.455919442132577,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.47403169014084506,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 1,
+              "ENTAILED": 307,
+              "REVIEW": 0,
+              "UNSUPPORTED": 298
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 1,
+              "ENTAILED": 376,
+              "REVIEW": 0,
+              "UNSUPPORTED": 456
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 0,
+              "ENTAILED": 133,
+              "REVIEW": 0,
+              "UNSUPPORTED": 700
+            }
+          },
+          "macro_f1": 0.35715969869994363,
+          "mcc": 0.19475916816716202,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.0032894736842105266,
+              "fn": 605,
+              "fp": 1,
+              "precision": 0.5,
+              "recall": 0.0016501650165016502,
+              "support": 606,
+              "tp": 1
+            },
+            "ENTAILED": {
+              "f1": 0.45603395997574286,
+              "fn": 457,
+              "fp": 440,
+              "precision": 0.46078431372549017,
+              "recall": 0.45138055222088835,
+              "support": 833,
+              "tp": 376
+            },
+            "UNSUPPORTED": {
+              "f1": 0.6121556624398775,
+              "fn": 133,
+              "fp": 754,
+              "precision": 0.4814305364511692,
+              "recall": 0.8403361344537815,
+              "support": 833,
+              "tp": 700
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.6988636363636365,
+          "high_risk_fn": 412,
+          "high_risk_fnr": 0.29512893982808025,
+          "high_risk_fp": 472,
+          "high_risk_precision": 0.6758241758241759,
+          "high_risk_recall": 0.7048710601719198,
+          "high_risk_tp": 984,
+          "unsafe_auprc": 0.7006483635390863
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.3548387096774194,
+            "contradiction_recall": 0.0,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.25609756097560976,
+            "contradiction_recall": 0.012195121951219513,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 0.0,
+            "contradiction_recall": 0.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.6072423398328691,
+            "contradiction_recall": 0.0,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.45138055222088835,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.3488372093023256,
+            "contradiction_recall": 0.0,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.3898305084745763,
+            "contradiction_recall": 0.0,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 0.8403361344537815,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.2157493377725259,
+          "mean_factual_precision": 0.3584413774220445,
+          "mean_hallucination_rate": 0.6415586225779553,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      },
+      "lexical_tfidf": {
+        "calibration": {
+          "brier": 0.8159387714993381,
+          "ece": 0.2835740762092338,
+          "mean_confidence": 0.7382395691669864,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.4546654929577465,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 0,
+              "ENTAILED": 270,
+              "REVIEW": 0,
+              "UNSUPPORTED": 336
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 0,
+              "ENTAILED": 305,
+              "REVIEW": 0,
+              "UNSUPPORTED": 528
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 0,
+              "ENTAILED": 105,
+              "REVIEW": 0,
+              "UNSUPPORTED": 728
+            }
+          },
+          "macro_f1": 0.33452829203035317,
+          "mcc": 0.1673066418095656,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.0,
+              "fn": 606,
+              "fp": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "support": 606,
+              "tp": 0
+            },
+            "ENTAILED": {
+              "f1": 0.403172504957039,
+              "fn": 528,
+              "fp": 375,
+              "precision": 0.4485294117647059,
+              "recall": 0.36614645858343337,
+              "support": 833,
+              "tp": 305
+            },
+            "UNSUPPORTED": {
+              "f1": 0.6004123711340206,
+              "fn": 105,
+              "fp": 864,
+              "precision": 0.457286432160804,
+              "recall": 0.8739495798319328,
+              "support": 833,
+              "tp": 728
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.7302118171683388,
+          "high_risk_fn": 348,
+          "high_risk_fnr": 0.2492836676217765,
+          "high_risk_fp": 544,
+          "high_risk_precision": 0.6582914572864321,
+          "high_risk_recall": 0.7507163323782235,
+          "high_risk_tp": 1048,
+          "unsafe_auprc": 0.62411842553791
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.3709677419354839,
+            "contradiction_recall": 0.0,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.23170731707317074,
+            "contradiction_recall": 0.0,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 0.0,
+            "contradiction_recall": 0.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.7075208913649025,
+            "contradiction_recall": 0.0,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.36614645858343337,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.37209302325581395,
+            "contradiction_recall": 0.0,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.4067796610169492,
+            "contradiction_recall": 0.0,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 0.8739495798319328,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.2523241452823932,
+          "mean_factual_precision": 0.27954735723398233,
+          "mean_hallucination_rate": 0.7204526427660182,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      },
+      "rules_only": {
+        "calibration": {
+          "brier": 0.4346478873239293,
+          "ece": 0.0676056338027865,
+          "mean_confidence": 0.7999999999999696,
+          "n": 2272
+        },
+        "classification": {
+          "accuracy": 0.7323943661971831,
+          "confusion_matrix": {
+            "CONTRADICTED": {
+              "CONTRADICTED": 368,
+              "ENTAILED": 141,
+              "REVIEW": 0,
+              "UNSUPPORTED": 97
+            },
+            "ENTAILED": {
+              "CONTRADICTED": 17,
+              "ENTAILED": 524,
+              "REVIEW": 0,
+              "UNSUPPORTED": 292
+            },
+            "UNSUPPORTED": {
+              "CONTRADICTED": 49,
+              "ENTAILED": 12,
+              "REVIEW": 0,
+              "UNSUPPORTED": 772
+            }
+          },
+          "macro_f1": 0.7253516705661219,
+          "mcc": 0.6047354079087833,
+          "n": 2272,
+          "per_class": {
+            "CONTRADICTED": {
+              "f1": 0.7076923076923077,
+              "fn": 238,
+              "fp": 66,
+              "precision": 0.847926267281106,
+              "recall": 0.6072607260726073,
+              "support": 606,
+              "tp": 368
+            },
+            "ENTAILED": {
+              "f1": 0.6940397350993377,
+              "fn": 309,
+              "fp": 153,
+              "precision": 0.7740029542097489,
+              "recall": 0.6290516206482593,
+              "support": 833,
+              "tp": 524
+            },
+            "UNSUPPORTED": {
+              "f1": 0.7743229689067203,
+              "fn": 61,
+              "fp": 389,
+              "precision": 0.664944013781223,
+              "recall": 0.9267707082833133,
+              "support": 833,
+              "tp": 772
+            }
+          }
+        },
+        "safety": {
+          "high_risk_f2": 0.8810419278451038,
+          "high_risk_fn": 131,
+          "high_risk_fnr": 0.09383954154727794,
+          "high_risk_fp": 330,
+          "high_risk_precision": 0.7931034482758621,
+          "high_risk_recall": 0.9061604584527221,
+          "high_risk_tp": 1265,
+          "unsafe_auprc": 0.7862577037996253
+        },
+        "slices": {
+          "entity_substitution": {
+            "alert_recall": 0.6935483870967742,
+            "contradiction_recall": 0.1935483870967742,
+            "n": 62
+          },
+          "laterality": {
+            "alert_recall": 0.524390243902439,
+            "contradiction_recall": 0.4268292682926829,
+            "n": 82
+          },
+          "measurement": {
+            "alert_recall": 1.0,
+            "contradiction_recall": 1.0,
+            "n": 1
+          },
+          "negation": {
+            "alert_recall": 0.9052924791086351,
+            "contradiction_recall": 0.7966573816155988,
+            "n": 359
+          },
+          "none": {
+            "accuracy": 0.6290516206482593,
+            "n": 833
+          },
+          "severity": {
+            "alert_recall": 0.4883720930232558,
+            "contradiction_recall": 0.20930232558139536,
+            "n": 43
+          },
+          "temporal_change": {
+            "alert_recall": 0.5423728813559322,
+            "contradiction_recall": 0.423728813559322,
+            "n": 59
+          },
+          "unsupported_insertion": {
+            "accuracy": 0.9267707082833133,
+            "n": 833
+          }
+        },
+        "summary": {
+          "hallucination_rate_mae": 0.12071697301448997,
+          "mean_factual_precision": 0.30658438555657547,
+          "mean_hallucination_rate": 0.6934156144434244,
+          "mean_review_rate": 0.0,
+          "n_summaries": 442
+        }
+      }
+    }
+  },
+  "elapsed_seconds": 2495.2974246999947,
+  "evaluation_design": {
+    "controlled_claim_level": "expert-quarantined Open-I controlled test",
+    "external_report_transfer": "patient-disjoint ReXErr frozen report test",
+    "external_sentence_transfer": "patient-disjoint ReXErr frozen sentence test",
+    "human_consensus_natural": "RadEvalX two-radiologist consensus",
+    "unlabelled_generated_corpus": "unscored robustness analysis only"
+  },
+  "generated_at_utc": "2026-08-22T20:43:55.140130+00:00",
+  "headline": {
+    "radevalx_auprc": 0.8051028757726377,
+    "radevalx_auroc": 0.719439728353141,
+    "radevalx_significant_burden_capture_at_20pct": 0.33112582781456956,
+    "rexerr_report_auprc": 0.9968090262460712,
+    "rexerr_report_auroc": 0.8538321087597344,
+    "rexerr_report_recall": 0.9409124906507106,
+    "rexerr_report_specificity": 0.5882352941176471,
+    "rexerr_semantic_auprc": 0.9409896714109108,
+    "rexerr_semantic_recall": 0.8153846153846154,
+    "rexerr_semantic_specificity": 0.9354031510658016
+  },
+  "integrity": {
+    "artifact": {
+      "artifact": "artifacts/vigil-rad-system/tuned_verifier",
+      "fusion_model_sha256": "fe87d11e35048c417d689e4a4671d867d07418ef985a28dc33de9875fa9cc594",
+      "fusion_present": true,
+      "neural_checkpoint_present": true,
+      "nli_checkpoint": "artifacts/vigil-rad-clinical-nli/best",
+      "nli_weights_sha256": "9600f954298c6e6d6f694dee5200b223393d0f05d2bc0b57131a9fa3436213b3",
+      "verifier_config_sha256": "9c9d3161b0e96ae8d7b8c09c2a1f901fb6aedff12e6ba1f7c1f870179fb58a63"
+    },
+    "expert_quarantine": {
+      "content_groups_quarantined": 97,
+      "expert_reports_quarantined": 100,
+      "manifest": "data/processed/expert_excluded/exclusion_manifest.json",
+      "manifest_sha256": "173a1364ea08cdf8eedd092cbaecdea13e023a9bd2eb72786cd66cb7497ecdc8",
+      "status": "passed"
+    },
+    "neural_fallback_used": false
+  },
+  "project": "MIRROR-Rad",
+  "publication_scope": {
+    "contains_report_text": false,
+    "contains_row_level_predictions": false,
+    "contains_subject_or_study_identifiers": false,
+    "level": "aggregate_only"
+  },
+  "radevalx": {
+    "clinical_selectivity": {
+      "insignificant_burden": {
+        "kendall": 0.13509333634618872,
+        "spearman": 0.18063659029651835
+      },
+      "significant_burden": {
+        "kendall": 0.27413543590104855,
+        "spearman": 0.36507421081253516
+      },
+      "spearman_difference": 0.1844376205160168
+    },
+    "confidence_intervals": {
+      "auprc": {
+        "estimate": 0.8051028757726377,
+        "lower": 0.7026124060345205,
+        "samples": 1000,
+        "upper": 0.900158764886974
+      },
+      "auroc": {
+        "estimate": 0.719439728353141,
+        "lower": 0.6031409168081494,
+        "samples": 1000,
+        "upper": 0.8184414524683802
+      },
+      "recall": {
+        "estimate": 0.41935483870967744,
+        "lower": 0.3125,
+        "samples": 1000,
+        "upper": 0.55
+      },
+      "specificity": {
+        "estimate": 0.8157894736842105,
+        "lower": 0.6744186046511628,
+        "samples": 1000,
+        "upper": 0.9302325581395349
+      }
+    },
+    "direction_alignment": {
+      "commission_score_vs_significant_commission_count": {
+        "kendall": 0.29125683290746757,
+        "spearman": 0.36643626071596674
+      },
+      "omission_score_vs_significant_omission_count": {
+        "kendall": 0.2579370446882219,
+        "spearman": 0.3406601344517383
+      }
+    },
+    "established_baselines": {
+      "CheXbert": {
+        "metrics": {
+          "accuracy": 0.66,
+          "auprc": 0.8268500388727069,
+          "auroc": 0.7415110356536503,
+          "brier": 0.20524176892087492,
+          "ece": 0.12706976227834013,
+          "f1": 0.7068965517241378,
+          "f2": 0.6788079470198676,
+          "false_alerts_per_100_negatives": 34.21052631578947,
+          "fn": 21,
+          "fp": 13,
+          "mcc": 0.31085252669363156,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.7592592592592593,
+          "recall": 0.6612903225806451,
+          "specificity": 0.6578947368421053,
+          "threshold": 0.5,
+          "tn": 25,
+          "tp": 41
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.26490066225165565,
+            "precision": 1.0,
+            "report_recall": 0.16129032258064516,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.39072847682119205,
+            "precision": 0.85,
+            "report_recall": 0.27419354838709675,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.4768211920529801,
+            "precision": 0.8,
+            "report_recall": 0.3870967741935484,
+            "reviewed": 30
+          }
+        },
+        "significant_burden_correlation": {
+          "kendall": 0.3165941229429618,
+          "spearman": 0.4132254557207696
+        }
+      },
+      "bertscore": {
+        "metrics": {
+          "accuracy": 0.62,
+          "auprc": 0.6857464971785489,
+          "auroc": 0.6073853989813243,
+          "brier": 0.22868374074032083,
+          "ece": 0.10626975749999999,
+          "f1": 0.7205882352941176,
+          "f2": 0.7608695652173912,
+          "false_alerts_per_100_negatives": 65.78947368421052,
+          "fn": 13,
+          "fp": 25,
+          "mcc": 0.14654277696828544,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.6621621621621622,
+          "recall": 0.7903225806451613,
+          "specificity": 0.34210526315789475,
+          "threshold": 0.5,
+          "tn": 13,
+          "tp": 49
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.1456953642384106,
+            "precision": 0.7,
+            "report_recall": 0.11290322580645161,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.31125827814569534,
+            "precision": 0.75,
+            "report_recall": 0.24193548387096775,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.39072847682119205,
+            "precision": 0.7,
+            "report_recall": 0.3387096774193548,
+            "reviewed": 30
+          }
+        },
+        "significant_burden_correlation": {
+          "kendall": 0.14675937477530882,
+          "spearman": 0.19531052601954726
+        }
+      },
+      "bleu4": {
+        "metrics": {
+          "accuracy": 0.62,
+          "auprc": 0.6748396582696033,
+          "auroc": 0.5814940577249575,
+          "brier": 0.3350296887749647,
+          "ece": 0.32129216277857753,
+          "f1": 0.7654320987654321,
+          "f2": 0.8908045977011495,
+          "false_alerts_per_100_negatives": 100.0,
+          "fn": 0,
+          "fp": 38,
+          "mcc": 0.0,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.62,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "threshold": 0.5,
+          "tn": 0,
+          "tp": 62
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.13245033112582782,
+            "precision": 0.5,
+            "report_recall": 0.08064516129032258,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.2052980132450331,
+            "precision": 0.55,
+            "report_recall": 0.1774193548387097,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.31788079470198677,
+            "precision": 0.6333333333333333,
+            "report_recall": 0.3064516129032258,
+            "reviewed": 30
+          }
+        },
+        "significant_burden_correlation": {
+          "kendall": 0.07970720123935374,
+          "spearman": 0.09597597678044463
+        }
+      },
+      "bleu_2": {
+        "metrics": {
+          "accuracy": 0.62,
+          "auprc": 0.6673098405017786,
+          "auroc": 0.5882852292020374,
+          "brier": 0.27019270796659256,
+          "ece": 0.19888727556275113,
+          "f1": 0.7654320987654321,
+          "f2": 0.8908045977011495,
+          "false_alerts_per_100_negatives": 100.0,
+          "fn": 0,
+          "fp": 38,
+          "mcc": 0.0,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.62,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "threshold": 0.5,
+          "tn": 0,
+          "tp": 62
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.1390728476821192,
+            "precision": 0.7,
+            "report_recall": 0.11290322580645161,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.26490066225165565,
+            "precision": 0.6,
+            "report_recall": 0.1935483870967742,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.3841059602649007,
+            "precision": 0.6666666666666666,
+            "report_recall": 0.3225806451612903,
+            "reviewed": 30
+          }
+        },
+        "significant_burden_correlation": {
+          "kendall": 0.12506852378650532,
+          "spearman": 0.16174055530089862
+        }
+      },
+      "radcliq": {
+        "metrics": {
+          "accuracy": 0.59,
+          "auprc": 0.6818072856773711,
+          "auroc": 0.5946519524617996,
+          "brier": 0.23953404797338695,
+          "ece": 0.14981596381905643,
+          "f1": 0.7007299270072993,
+          "f2": 0.7430340557275542,
+          "false_alerts_per_100_negatives": 71.05263157894737,
+          "fn": 14,
+          "fp": 27,
+          "mcc": 0.07136791021047098,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.64,
+          "recall": 0.7741935483870968,
+          "specificity": 0.2894736842105263,
+          "threshold": 0.5,
+          "tn": 11,
+          "tp": 48
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.152317880794702,
+            "precision": 0.7,
+            "report_recall": 0.11290322580645161,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.304635761589404,
+            "precision": 0.8,
+            "report_recall": 0.25806451612903225,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.3973509933774834,
+            "precision": 0.7333333333333333,
+            "report_recall": 0.3548387096774194,
+            "reviewed": 30
+          }
+        },
+        "significant_burden_correlation": {
+          "kendall": 0.1393752552897587,
+          "spearman": 0.1881975572934603
+        }
+      },
+      "radgraph_f1": {
+        "metrics": {
+          "accuracy": 0.64,
+          "auprc": 0.6591636365203049,
+          "auroc": 0.5740662139219015,
+          "brier": 0.25420011426089295,
+          "ece": 0.1513562563334401,
+          "f1": 0.775,
+          "f2": 0.8959537572254336,
+          "false_alerts_per_100_negatives": 94.73684210526316,
+          "fn": 0,
+          "fp": 36,
+          "mcc": 0.18247610675957288,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.6326530612244898,
+          "recall": 1.0,
+          "specificity": 0.05263157894736842,
+          "threshold": 0.5,
+          "tn": 2,
+          "tp": 62
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.1456953642384106,
+            "precision": 0.7,
+            "report_recall": 0.11290322580645161,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.2582781456953642,
+            "precision": 0.65,
+            "report_recall": 0.20967741935483872,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.3708609271523179,
+            "precision": 0.6666666666666666,
+            "report_recall": 0.3225806451612903,
+            "reviewed": 30
+          }
+        },
+        "significant_burden_correlation": {
+          "kendall": 0.11987021040304052,
+          "spearman": 0.1590580059014856
+        }
+      }
+    },
+    "files": {
+      "distribution": "Aggregate evidence only. Row-level predictions, report text, claims, evidence excerpts, and study identifiers are intentionally not bundled."
+    },
+    "label_provenance": "Consensus error counts from two board-certified radiologists.",
+    "limitations": [
+      "Consensus counts are report-level and do not provide claim-level NLI labels.",
+      "The reference report is treated as textual evidence; this is not image-grounded truth.",
+      "The cohort contains 100 reports from one report-generation system.",
+      "All related Open-I content groups were quarantined before training and model selection."
+    ],
+    "metrics": {
+      "accuracy": 0.57,
+      "auprc": 0.8051028757726377,
+      "auroc": 0.719439728353141,
+      "brier": 0.23662700034876302,
+      "ece": 0.18849238548851044,
+      "f1": 0.5473684210526315,
+      "f2": 0.4626334519572954,
+      "false_alerts_per_100_negatives": 18.42105263157895,
+      "fn": 36,
+      "fp": 7,
+      "mcc": 0.2427324002297775,
+      "n": 100,
+      "negatives": 38,
+      "positives": 62,
+      "precision": 0.7878787878787878,
+      "recall": 0.41935483870967744,
+      "specificity": 0.8157894736842105,
+      "threshold": 0.5,
+      "tn": 31,
+      "tp": 26
+    },
+    "model_ablations": {
+      "bidirectional_raw": {
+        "metrics": {
+          "accuracy": 0.57,
+          "auprc": 0.8051028757726377,
+          "auroc": 0.719439728353141,
+          "brier": 0.23662700034876302,
+          "ece": 0.18849238548851044,
+          "f1": 0.5473684210526315,
+          "f2": 0.4626334519572954,
+          "false_alerts_per_100_negatives": 18.42105263157895,
+          "fn": 36,
+          "fp": 7,
+          "mcc": 0.2427324002297775,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.7878787878787878,
+          "recall": 0.41935483870967744,
+          "specificity": 0.8157894736842105,
+          "threshold": 0.5,
+          "tn": 31,
+          "tp": 26
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.17880794701986755,
+            "precision": 0.9,
+            "report_recall": 0.14516129032258066,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.33112582781456956,
+            "precision": 0.85,
+            "report_recall": 0.27419354838709675,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.47019867549668876,
+            "precision": 0.8333333333333334,
+            "report_recall": 0.4032258064516129,
+            "reviewed": 30
+          }
+        }
+      },
+      "commission_only": {
+        "metrics": {
+          "accuracy": 0.61,
+          "auprc": 0.7502702408570411,
+          "auroc": 0.6409168081494058,
+          "brier": 0.3598588090924343,
+          "ece": 0.3150953339916786,
+          "f1": 0.6355140186915887,
+          "f2": 0.5802047781569966,
+          "false_alerts_per_100_negatives": 28.94736842105263,
+          "fn": 28,
+          "fp": 11,
+          "mcc": 0.2526123565712085,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.7555555555555555,
+          "recall": 0.5483870967741935,
+          "specificity": 0.7105263157894737,
+          "threshold": 0.5,
+          "tn": 27,
+          "tp": 34
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.11920529801324503,
+            "precision": 0.9,
+            "report_recall": 0.14516129032258066,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.2185430463576159,
+            "precision": 0.8,
+            "report_recall": 0.25806451612903225,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.3973509933774834,
+            "precision": 0.7333333333333333,
+            "report_recall": 0.3548387096774194,
+            "reviewed": 30
+          }
+        }
+      },
+      "omission_only": {
+        "metrics": {
+          "accuracy": 0.68,
+          "auprc": 0.7689501674459082,
+          "auroc": 0.6629881154499151,
+          "brier": 0.25450013223647683,
+          "ece": 0.22887404319423368,
+          "f1": 0.7647058823529411,
+          "f2": 0.8074534161490684,
+          "false_alerts_per_100_negatives": 57.89473684210526,
+          "fn": 10,
+          "fp": 22,
+          "mcc": 0.28744929328394453,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.7027027027027027,
+          "recall": 0.8387096774193549,
+          "specificity": 0.42105263157894735,
+          "threshold": 0.5,
+          "tn": 16,
+          "tp": 52
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.23841059602649006,
+            "precision": 0.9,
+            "report_recall": 0.14516129032258066,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.33112582781456956,
+            "precision": 0.9,
+            "report_recall": 0.2903225806451613,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.5033112582781457,
+            "precision": 0.8333333333333334,
+            "report_recall": 0.4032258064516129,
+            "reviewed": 30
+          }
+        }
+      },
+      "rexerr_transfer_router": {
+        "metrics": {
+          "accuracy": 0.67,
+          "auprc": 0.7928578048902943,
+          "auroc": 0.6973684210526316,
+          "brier": 0.22074015054155902,
+          "ece": 0.13227195659139085,
+          "f1": 0.7870967741935484,
+          "f2": 0.8944281524926686,
+          "false_alerts_per_100_negatives": 84.21052631578948,
+          "fn": 1,
+          "fp": 32,
+          "mcc": 0.2696921648765604,
+          "n": 100,
+          "negatives": 38,
+          "positives": 62,
+          "precision": 0.6559139784946236,
+          "recall": 0.9838709677419355,
+          "specificity": 0.15789473684210525,
+          "threshold": 0.34069250074943375,
+          "tn": 6,
+          "tp": 61
+        },
+        "review_budgets": {
+          "10pct": {
+            "error_count_recall": 0.17218543046357615,
+            "precision": 0.9,
+            "report_recall": 0.14516129032258066,
+            "reviewed": 10
+          },
+          "20pct": {
+            "error_count_recall": 0.32450331125827814,
+            "precision": 0.85,
+            "report_recall": 0.27419354838709675,
+            "reviewed": 20
+          },
+          "30pct": {
+            "error_count_recall": 0.4900662251655629,
+            "precision": 0.8333333333333334,
+            "report_recall": 0.4032258064516129,
+            "reviewed": 30
+          }
+        }
+      }
+    },
+    "population": {
+      "insignificant_error_count": 111,
+      "insignificant_positive_reports": 61,
+      "reports": 100,
+      "significant_categories": {
+        "false_finding": 19,
+        "incorrect_location_or_position": 1,
+        "incorrect_severity": 0,
+        "omitted_comparison_or_change": 20,
+        "omitted_finding": 105,
+        "omitted_uncertainty": 3,
+        "spurious_comparison": 2,
+        "spurious_uncertainty": 1
+      },
+      "significant_commission_count": 23,
+      "significant_error_count": 151,
+      "significant_omission_count": 128,
+      "significant_positive_reports": 62
+    },
+    "primary_score": "raw bidirectional ordinal review risk",
+    "review_budgets": {
+      "10pct": {
+        "error_count_recall": 0.17880794701986755,
+        "precision": 0.9,
+        "report_recall": 0.14516129032258066,
+        "reviewed": 10
+      },
+      "20pct": {
+        "error_count_recall": 0.33112582781456956,
+        "precision": 0.85,
+        "report_recall": 0.27419354838709675,
+        "reviewed": 20
+      },
+      "30pct": {
+        "error_count_recall": 0.47019867549668876,
+        "precision": 0.8333333333333334,
+        "report_recall": 0.4032258064516129,
+        "reviewed": 30
+      }
+    },
+    "role": "external human-consensus generated-report diagnostic benchmark",
+    "significant_burden_correlation": {
+      "kendall": 0.27413543590104855,
+      "spearman": 0.36507421081253516
+    },
+    "task": "clinically significant error detection and review prioritization",
+    "transfer_routing": {
+      "metrics": {
+        "accuracy": 0.67,
+        "auprc": 0.7928578048902943,
+        "auroc": 0.6973684210526316,
+        "brier": 0.22074015054155902,
+        "ece": 0.13227195659139085,
+        "f1": 0.7870967741935484,
+        "f2": 0.8944281524926686,
+        "false_alerts_per_100_negatives": 84.21052631578948,
+        "fn": 1,
+        "fp": 32,
+        "mcc": 0.2696921648765604,
+        "n": 100,
+        "negatives": 38,
+        "positives": 62,
+        "precision": 0.6559139784946236,
+        "recall": 0.9838709677419355,
+        "specificity": 0.15789473684210525,
+        "threshold": 0.34069250074943375,
+        "tn": 6,
+        "tp": 61
+      },
+      "review_budgets": {
+        "10pct": {
+          "error_count_recall": 0.17218543046357615,
+          "precision": 0.9,
+          "report_recall": 0.14516129032258066,
+          "reviewed": 10
+        },
+        "20pct": {
+          "error_count_recall": 0.32450331125827814,
+          "precision": 0.85,
+          "report_recall": 0.27419354838709675,
+          "reviewed": 20
+        },
+        "30pct": {
+          "error_count_recall": 0.4900662251655629,
+          "precision": 0.8333333333333334,
+          "report_recall": 0.4032258064516129,
+          "reviewed": 30
+        }
+      },
+      "review_threshold": 0.34069250074943375,
+      "score_semantics": "ReXErr-trained transfer risk; not a radiologist probability"
+    }
+  },
+  "rexerr": {
+    "ablations": {
+      "bidirectional_aligned": {
+        "accuracy": 0.8878321678321678,
+        "auprc": 0.9409896714109108,
+        "auroc": 0.9504971473756707,
+        "brier": 0.08832009250696964,
+        "ece": 0.05981591029393425,
+        "f1": 0.8521277380337784,
+        "f2": 0.8296949503073477,
+        "false_alerts_per_100_negatives": 6.459684893419833,
+        "fn": 1308,
+        "fp": 697,
+        "mcc": 0.7640820843080155,
+        "n": 17875,
+        "negatives": 10790,
+        "positives": 7085,
+        "precision": 0.8923385851096695,
+        "recall": 0.8153846153846154,
+        "specificity": 0.9354031510658016,
+        "threshold": 0.5,
+        "tn": 10093,
+        "tp": 5777
+      },
+      "bidirectional_raw": {
+        "accuracy": 0.6971748251748252,
+        "auprc": 0.791497433055313,
+        "auroc": 0.8622932705797405,
+        "brier": 0.20964786229241061,
+        "ece": 0.21637395270473575,
+        "f1": 0.45394935942701503,
+        "f2": 0.3609471252566735,
+        "false_alerts_per_100_negatives": 5.35681186283596,
+        "fn": 4835,
+        "fp": 578,
+        "mcc": 0.3538562339686908,
+        "n": 17875,
+        "negatives": 10790,
+        "positives": 7085,
+        "precision": 0.7956152758132956,
+        "recall": 0.3175723359209598,
+        "specificity": 0.9464318813716404,
+        "threshold": 0.5,
+        "tn": 10212,
+        "tp": 2250
+      },
+      "commission_only": {
+        "accuracy": 0.7982097902097902,
+        "auprc": 0.8148463793220608,
+        "auroc": 0.8361465535340429,
+        "brier": 0.1908078444077232,
+        "ece": 0.17571530449830974,
+        "f1": 0.6946067225467784,
+        "f2": 0.6202746023105304,
+        "false_alerts_per_100_negatives": 5.783132530120482,
+        "fn": 2983,
+        "fp": 624,
+        "mcc": 0.5780167773487497,
+        "n": 17875,
+        "negatives": 10790,
+        "positives": 7085,
+        "precision": 0.8679644519678374,
+        "recall": 0.578969654199012,
+        "specificity": 0.9421686746987952,
+        "threshold": 0.5,
+        "tn": 10166,
+        "tp": 4102
+      },
+      "lexical_change": {
+        "accuracy": 0.7653706293706294,
+        "auprc": 0.9923720481556191,
+        "auroc": 0.9957035677589027,
+        "brier": 0.18555275336501978,
+        "ece": 0.2103987869633209,
+        "f1": 0.5796752856283824,
+        "f2": 0.46297185669003943,
+        "false_alerts_per_100_negatives": 0.009267840593141797,
+        "fn": 4193,
+        "fp": 1,
+        "mcc": 0.5419776194324228,
+        "n": 17875,
+        "negatives": 10790,
+        "positives": 7085,
+        "precision": 0.9996543380573799,
+        "recall": 0.4081863091037403,
+        "specificity": 0.9999073215940686,
+        "threshold": 0.5,
+        "tn": 10789,
+        "tp": 2892
+      },
+      "omission_only": {
+        "accuracy": 0.6965594405594405,
+        "auprc": 0.6341431622103575,
+        "auroc": 0.594391242839007,
+        "brier": 0.28052831819387236,
+        "ece": 0.2599140050625836,
+        "f1": 0.489553924336533,
+        "f2": 0.40792321445374985,
+        "false_alerts_per_100_negatives": 8.71177015755329,
+        "fn": 4484,
+        "fp": 940,
+        "mcc": 0.3436257393227393,
+        "n": 17875,
+        "negatives": 10790,
+        "positives": 7085,
+        "precision": 0.7345382660265461,
+        "recall": 0.3671136203246295,
+        "specificity": 0.9128822984244671,
+        "threshold": 0.5,
+        "tn": 9850,
+        "tp": 2601
+      }
+    },
+    "calibration": {
+      "artifact": "artifacts/vigil-rad-risk-calibrator-sentence.pkl",
+      "artifact_sha256": "0075ba0d66efb20e7e3b3e98b1197dc94b21df07d7e154486fceec7b3a35fff0",
+      "feature_order": [
+        "commission_risk",
+        "omission_risk",
+        "commission_maximum",
+        "omission_maximum",
+        "commission_alert_fraction",
+        "omission_alert_fraction",
+        "length_ratio_deviation"
+      ],
+      "fit_dataset": "ReXErr validation semantic errors and clean controls",
+      "fit_granularity": "sentence",
+      "fit_population": {
+        "error_types": {
+          "Add medical device": 571,
+          "Change location": 516,
+          "Change measurement": 55,
+          "Change name of device": 202,
+          "Change position of device": 201,
+          "Change severity": 445,
+          "False negation": 779,
+          "False prediction": 1261
+        },
+        "pair_structures": {
+          "addition": 1350,
+          "deletion": 259,
+          "substitution": 8582
+        },
+        "roles": {
+          "clean_control": 6161,
+          "semantic_error": 4030
+        },
+        "rows": 10191,
+        "unique_studies": 1626,
+        "unique_subjects": 480
+      },
+      "fit_rows": 10191,
+      "fit_split_sha256": "1a53f0a4d5c26cb7b5063ca0bd4c25b4f660835201a7e0e2ba9e08b5fb155a8d",
+      "method": "standardized_l2_logistic",
+      "positive_rows": 4030,
+      "random_state": 42
+    },
+    "confidence_intervals": {
+      "auprc": {
+        "estimate": 0.9409896714109108,
+        "lower": 0.9371831734222642,
+        "samples": 1000,
+        "upper": 0.9448182774893643
+      },
+      "auroc": {
+        "estimate": 0.9504971473756707,
+        "lower": 0.9470411364378492,
+        "samples": 1000,
+        "upper": 0.9539743379696066
+      },
+      "recall": {
+        "estimate": 0.8153846153846154,
+        "lower": 0.8054376866258054,
+        "samples": 1000,
+        "upper": 0.8253182461103253
+      },
+      "specificity": {
+        "estimate": 0.9354031510658016,
+        "lower": 0.9284773197816676,
+        "samples": 1000,
+        "upper": 0.9418285365605614
+      }
+    },
+    "error_type_recall": {
+      "Add medical device": {
+        "mean_risk": 0.9988619929381416,
+        "n": 910,
+        "recall": 0.9989010989010989,
+        "recall_95ci": [
+          0.9938018077882222,
+          0.9998059906276733
+        ]
+      },
+      "Change location": {
+        "mean_risk": 0.7008442151147567,
+        "n": 950,
+        "recall": 0.7347368421052631,
+        "recall_95ci": [
+          0.7057589963489339,
+          0.7618239503510588
+        ]
+      },
+      "Change measurement": {
+        "mean_risk": 0.8348527333974988,
+        "n": 67,
+        "recall": 0.8955223880597015,
+        "recall_95ci": [
+          0.7996871695126198,
+          0.9484623023121713
+        ]
+      },
+      "Change name of device": {
+        "mean_risk": 0.4146795870616432,
+        "n": 414,
+        "recall": 0.32367149758454106,
+        "recall_95ci": [
+          0.28040184820990127,
+          0.37018332729645725
+        ]
+      },
+      "Change position of device": {
+        "mean_risk": 0.5908617046592775,
+        "n": 438,
+        "recall": 0.5616438356164384,
+        "recall_95ci": [
+          0.5148391111217141,
+          0.6073766722140774
+        ]
+      },
+      "Change severity": {
+        "mean_risk": 0.5988959287881687,
+        "n": 849,
+        "recall": 0.6348645465253239,
+        "recall_95ci": [
+          0.6019380534973575,
+          0.6665760972061745
+        ]
+      },
+      "False negation": {
+        "mean_risk": 0.9016995667901253,
+        "n": 1398,
+        "recall": 0.9170243204577968,
+        "recall_95ci": [
+          0.901396492593554,
+          0.9303666091917955
+        ]
+      },
+      "False prediction": {
+        "mean_risk": 0.9137332132986203,
+        "n": 2059,
+        "recall": 0.9271491015055853,
+        "recall_95ci": [
+          0.9151102737814506,
+          0.9375970404324119
+        ]
+      }
+    },
+    "files": {
+      "distribution": "Aggregate evidence only. Row-level predictions, report text, claims, evidence excerpts, and study identifiers are intentionally not bundled."
+    },
+    "label_noise_audit": {
+      "changed_but_labelled_clean": 290,
+      "nominal_clean_rows": 10790
+    },
+    "label_provenance": "Clinician-designed synthetic errors with post-hoc automated sentence labels; not radiologist factuality ground truth.",
+    "limitations": [
+      "The error labels are synthetic/silver and include known alignment noise.",
+      "Lexical change is a strong shortcut in this constructed benchmark.",
+      "Linguistic-quality changes are reported separately from semantic clinical errors."
+    ],
+    "linguistic_robustness": {
+      "alert_rate": 0.322954822954823,
+      "alert_rate_95ci": [
+        0.30074685091215064,
+        0.3459912693344876
+      ],
+      "n": 1638,
+      "types": [
+        "Add repetition",
+        "Add typo",
+        "Change to homophone"
+      ]
+    },
+    "metrics": {
+      "accuracy": 0.8878321678321678,
+      "auprc": 0.9409896714109108,
+      "auroc": 0.9504971473756707,
+      "brier": 0.08832009250696964,
+      "ece": 0.05981591029393425,
+      "f1": 0.8521277380337784,
+      "f2": 0.8296949503073477,
+      "false_alerts_per_100_negatives": 6.459684893419833,
+      "fn": 1308,
+      "fp": 697,
+      "mcc": 0.7640820843080155,
+      "n": 17875,
+      "negatives": 10790,
+      "positives": 7085,
+      "precision": 0.8923385851096695,
+      "recall": 0.8153846153846154,
+      "specificity": 0.9354031510658016,
+      "threshold": 0.5,
+      "tn": 10093,
+      "tp": 5777
+    },
+    "pair_structure_recall": {
+      "addition": {
+        "n": 2143,
+        "recall": 0.9995333644423705,
+        "recall_95ci": [
+          0.9973614224680897,
+          0.9999176226161693
+        ]
+      },
+      "deletion": {
+        "n": 476,
+        "recall": 0.9873949579831933,
+        "recall_95ci": [
+          0.9727755176999969,
+          0.9942105387786832
+        ]
+      },
+      "substitution": {
+        "n": 4466,
+        "recall": 0.7086878638602776,
+        "recall_95ci": [
+          0.6951871656549188,
+          0.7218298621686564
+        ]
+      }
+    },
+    "primary_population": {
+      "clean_controls": 10790,
+      "linguistic_errors_separate": 1638,
+      "neutral_excluded": 346,
+      "rows": 17875,
+      "semantic_errors": 7085
+    },
+    "report_level": {
+      "ablations": {
+        "bidirectional_aligned": {
+          "accuracy": 0.8474889217134417,
+          "auprc": 0.9968090262460712,
+          "auroc": 0.8538321087597344,
+          "brier": 0.15202415136155917,
+          "ece": 0.3618432639744105,
+          "f1": 0.9165825085841245,
+          "f2": 0.8745085947737609,
+          "false_alerts_per_100_negatives": 23.529411764705884,
+          "fn": 405,
+          "fp": 8,
+          "mcc": 0.18665332053793324,
+          "n": 2708,
+          "negatives": 34,
+          "positives": 2674,
+          "precision": 0.9964866051822574,
+          "recall": 0.8485415108451758,
+          "specificity": 0.7647058823529411,
+          "threshold": 0.5,
+          "tn": 26,
+          "tp": 2269
+        },
+        "bidirectional_raw": {
+          "accuracy": 0.7426144756277696,
+          "auprc": 0.9964897345301333,
+          "auroc": 0.8486295041576841,
+          "brier": 0.17680661638672118,
+          "ece": 0.3070579271762052,
+          "f1": 0.8506535247482323,
+          "f2": 0.782173536133659,
+          "false_alerts_per_100_negatives": 23.529411764705884,
+          "fn": 689,
+          "fp": 8,
+          "mcc": 0.12807231309923156,
+          "n": 2708,
+          "negatives": 34,
+          "positives": 2674,
+          "precision": 0.9959859508278976,
+          "recall": 0.7423335826477188,
+          "specificity": 0.7647058823529411,
+          "threshold": 0.5,
+          "tn": 26,
+          "tp": 1985
+        },
+        "commission_only": {
+          "accuracy": 0.8836779911373708,
+          "auprc": 0.9972177031096272,
+          "auroc": 0.8670421048000351,
+          "brier": 0.16166200913792889,
+          "ece": 0.3185582305181047,
+          "f1": 0.9376361116610572,
+          "f2": 0.9056834697468062,
+          "false_alerts_per_100_negatives": 26.470588235294116,
+          "fn": 306,
+          "fp": 9,
+          "mcc": 0.21104954669584733,
+          "n": 2708,
+          "negatives": 34,
+          "positives": 2674,
+          "precision": 0.9962137147665124,
+          "recall": 0.8855646970830217,
+          "specificity": 0.7352941176470589,
+          "threshold": 0.5,
+          "tn": 25,
+          "tp": 2368
+        },
+        "omission_only": {
+          "accuracy": 0.7326440177252584,
+          "auprc": 0.9953431168234983,
+          "auroc": 0.7774319151744469,
+          "brier": 0.2863341663717209,
+          "ece": 0.4303005334893681,
+          "f1": 0.8440327445066782,
+          "f2": 0.7734523057485787,
+          "false_alerts_per_100_negatives": 26.470588235294116,
+          "fn": 715,
+          "fp": 9,
+          "mcc": 0.11690926191131776,
+          "n": 2708,
+          "negatives": 34,
+          "positives": 2674,
+          "precision": 0.9954268292682927,
+          "recall": 0.7326103216155572,
+          "specificity": 0.7352941176470589,
+          "threshold": 0.5,
+          "tn": 25,
+          "tp": 1959
+        }
+      },
+      "baselines_and_negative_controls": {
+        "all_changed_baseline": {
+          "accuracy": 0.9874446085672083,
+          "auprc": 0.9874446085672083,
+          "auroc": 0.5,
+          "brier": 0.012555391432791729,
+          "ece": 0.012555391432791718,
+          "f1": 0.993682645856559,
+          "f2": 0.997463443748135,
+          "false_alerts_per_100_negatives": 100.0,
+          "fn": 0,
+          "fp": 34,
+          "mcc": 0.0,
+          "n": 2708,
+          "negatives": 34,
+          "positives": 2674,
+          "precision": 0.9874446085672083,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "threshold": 0.5,
+          "tn": 0,
+          "tp": 2674
+        },
+        "changed_semantic_negative_slice": {
+          "n": 34,
+          "specificity": 0.5882352941176471,
+          "specificity_95ci": [
+            0.4222159387881251,
+            0.7363403163612884
+          ]
+        },
+        "deceptive_identity_shortcut": {
+          "metrics": {
+            "accuracy": 0.9937223042836041,
+            "auprc": 0.9874446085672083,
+            "auroc": 0.9938001458789205,
+            "brier": 0.006277695716395864,
+            "ece": 0.006277695716395859,
+            "f1": 0.993682645856559,
+            "f2": 0.997463443748135,
+            "false_alerts_per_100_negatives": 1.2399708242159009,
+            "fn": 0,
+            "fp": 34,
+            "mcc": 0.9875224470945874,
+            "n": 5416,
+            "negatives": 2742,
+            "positives": 2674,
+            "precision": 0.9874446085672083,
+            "recall": 1.0,
+            "specificity": 0.987600291757841,
+            "threshold": 0.5,
+            "tn": 2708,
+            "tp": 2674
+          },
+          "purpose": "shows why identity controls are excluded from primary metrics"
+        },
+        "identity_invariance": {
+          "false_alert_rate": 0.35561299852289513,
+          "false_alert_rate_95ci": [
+            0.3377995489052823,
+            0.37383551093332995
+          ],
+          "n": 2708
+        }
+      },
+      "confidence_intervals": {
+        "auprc": {
+          "estimate": 0.9968090262460712,
+          "lower": 0.9938375833673045,
+          "samples": 1000,
+          "upper": 0.9989944930226565
+        },
+        "auroc": {
+          "estimate": 0.8538321087597344,
+          "lower": 0.7737060337432085,
+          "samples": 1000,
+          "upper": 0.9255803775686805
+        },
+        "recall": {
+          "estimate": 0.9409124906507106,
+          "lower": 0.9312106918238994,
+          "samples": 1000,
+          "upper": 0.9499823881648468
+        },
+        "specificity": {
+          "estimate": 0.5882352941176471,
+          "lower": 0.42424242424242425,
+          "samples": 1000,
+          "upper": 0.7586206896551724
+        }
+      },
+      "files": {
+        "distribution": "Aggregate evidence only. Row-level predictions, report text, claims, evidence excerpts, and study identifiers are intentionally not bundled."
+      },
+      "limitations": [
+        "Injected errors are synthetic and report sampled-error fields can overstate successful insertions.",
+        "Only a small number of changed semantic-negative reports are available in validation and test.",
+        "Identity controls are reported only as invariance checks and are excluded from primary metrics.",
+        "The transfer score is trained on ReXErr and is not a radiologist-calibrated probability.",
+        "The report-level benchmark evaluates consistency against text, not image-grounded clinical truth."
+      ],
+      "metrics": {
+        "accuracy": 0.9364844903988183,
+        "auprc": 0.9968090262460712,
+        "auroc": 0.8538321087597344,
+        "brier": 0.15202415136155917,
+        "ece": 0.3618432639744105,
+        "f1": 0.9669485011529593,
+        "f2": 0.9511568123393318,
+        "false_alerts_per_100_negatives": 41.1764705882353,
+        "fn": 158,
+        "fp": 14,
+        "mcc": 0.23775347898347132,
+        "n": 2708,
+        "negatives": 34,
+        "positives": 2674,
+        "precision": 0.9944664031620554,
+        "recall": 0.9409124906507106,
+        "specificity": 0.5882352941176471,
+        "threshold": 0.34069250074943375,
+        "tn": 20,
+        "tp": 2516
+      },
+      "population": {
+        "cases": 2708,
+        "changed_semantic_negative": 34,
+        "error_reports": 2674,
+        "identity_controls_separate": 2708,
+        "unique_studies": 2708,
+        "unique_subjects": 289
+      },
+      "review_budgets": {
+        "10pct": {
+          "error_count_recall": 0.139590684544813,
+          "precision": 0.996309963099631,
+          "report_recall": 0.10097232610321616,
+          "reviewed": 271
+        },
+        "20pct": {
+          "error_count_recall": 0.26153846153846155,
+          "precision": 0.9981549815498155,
+          "report_recall": 0.20231862378459237,
+          "reviewed": 542
+        },
+        "30pct": {
+          "error_count_recall": 0.37826393789696544,
+          "precision": 0.998769987699877,
+          "report_recall": 0.3036649214659686,
+          "reviewed": 813
+        }
+      },
+      "role": "patient-disjoint external silver report benchmark",
+      "semantic_error_count_slices": {
+        "1": {
+          "n": 431,
+          "recall": 0.839907192575406,
+          "recall_95ci": [
+            0.8023083687373967,
+            0.8715004276791791
+          ]
+        },
+        "10": {
+          "n": 3,
+          "recall": 1.0,
+          "recall_95ci": [
+            0.4385029682449545,
+            1.0
+          ]
+        },
+        "12": {
+          "n": 2,
+          "recall": 1.0,
+          "recall_95ci": [
+            0.3423802275066531,
+            1.0
+          ]
+        },
+        "2": {
+          "n": 986,
+          "recall": 0.947261663286004,
+          "recall_95ci": [
+            0.9314941368545259,
+            0.9595576494091274
+          ]
+        },
+        "3": {
+          "n": 712,
+          "recall": 0.9620786516853933,
+          "recall_95ci": [
+            0.945388723539921,
+            0.9738092244023728
+          ]
+        },
+        "4": {
+          "n": 331,
+          "recall": 0.972809667673716,
+          "recall_95ci": [
+            0.9491403320021483,
+            0.9856304132406322
+          ]
+        },
+        "5": {
+          "n": 130,
+          "recall": 1.0,
+          "recall_95ci": [
+            0.9712984388055687,
+            1.0
+          ]
+        },
+        "6": {
+          "n": 51,
+          "recall": 0.9803921568627451,
+          "recall_95ci": [
+            0.8969543127385502,
+            0.9965303073589391
+          ]
+        },
+        "7": {
+          "n": 13,
+          "recall": 1.0,
+          "recall_95ci": [
+            0.7719046276458015,
+            1.0
+          ]
+        },
+        "8": {
+          "n": 14,
+          "recall": 1.0,
+          "recall_95ci": [
+            0.7846891972623642,
+            1.0
+          ]
+        },
+        "9": {
+          "n": 1,
+          "recall": 1.0,
+          "recall_95ci": [
+            0.20654931437723742,
+            1.0
+          ]
+        }
+      },
+      "task": "semantic versus linguistic-only changed-report routing",
+      "transfer_router": {
+        "artifact": "artifacts/vigil-rad-risk-calibrator.pkl",
+        "artifact_sha256": "2740f1e26fe0d3e05dfc12a0a014f75a98c2df47aabd14827c501bf963968e90",
+        "candidate_selection": {
+          "monotonic_raw_isotonic": {
+            "threshold_selection": {
+              "negative_rows": 25.0,
+              "positive_rows": 1610.0,
+              "recall": 0.893167701863354,
+              "safety_weighted_objective": 0.8185590062111802,
+              "specificity": 0.68,
+              "threshold": 0.5384615384615384
+            },
+            "validation_metrics": {
+              "accuracy": 0.8899082568807339,
+              "auprc": 0.9962459195769011,
+              "auroc": 0.85872049689441,
+              "brier": 0.11161203398324582,
+              "ece": 0.2495965280725435,
+              "f1": 0.9410994764397905,
+              "f2": 0.9117423281765153,
+              "false_alerts_per_100_negatives": 32.0,
+              "fn": 172,
+              "fp": 8,
+              "mcc": 0.21996298448103319,
+              "n": 1635,
+              "negatives": 25,
+              "positives": 1610,
+              "precision": 0.9944674965421854,
+              "recall": 0.893167701863354,
+              "specificity": 0.68,
+              "threshold": 0.5384615384615384,
+              "tn": 17,
+              "tp": 1438
+            }
+          },
+          "nonnegative_two_feature_logistic": {
+            "threshold_selection": {
+              "negative_rows": 25.0,
+              "positive_rows": 1610.0,
+              "recall": 0.9285714285714286,
+              "safety_weighted_objective": 0.8275714285714286,
+              "specificity": 0.64,
+              "threshold": 0.34069250074943375
+            },
+            "validation_metrics": {
+              "accuracy": 0.9241590214067278,
+              "auprc": 0.9963432879719208,
+              "auroc": 0.8580372670807452,
+              "brier": 0.16465458721455914,
+              "ece": 0.37496099299137275,
+              "f1": 0.960179833012203,
+              "f2": 0.9409617321248742,
+              "false_alerts_per_100_negatives": 36.0,
+              "fn": 115,
+              "fp": 9,
+              "mcc": 0.25698537503337354,
+              "n": 1635,
+              "negatives": 25,
+              "positives": 1610,
+              "precision": 0.9940159574468085,
+              "recall": 0.9285714285714286,
+              "specificity": 0.64,
+              "threshold": 0.34069250074943375,
+              "tn": 16,
+              "tp": 1495
+            }
+          }
+        },
+        "coefficients": {
+          "commission_weight": 1.2973612046667016,
+          "intercept": -0.7556730263027779,
+          "omission_weight": 0.7554609251069895
+        },
+        "feature_order": [
+          "commission_risk",
+          "omission_risk",
+          "commission_maximum",
+          "omission_maximum",
+          "commission_alert_fraction",
+          "omission_alert_fraction",
+          "length_ratio_deviation"
+        ],
+        "fit_dataset": "ReXErr train changed reports with post-hoc semantic labels",
+        "fit_granularity": "complete_report",
+        "fit_population": {
+          "cases": 6200,
+          "changed_semantic_negative": 3100,
+          "reports_without_posthoc_labels_excluded": 19,
+          "semantic_positive": 3100,
+          "unique_studies": 6200
+        },
+        "fit_report_split_sha256": "a006d57418e6e92d403bad7abfef3a77a7b24acc2be30899ed17ddf54d9dcbb1",
+        "fit_rows": 6200,
+        "fit_sentence_split_sha256": "ff282baaaaed5ec76fd1ef83eaec6b60fb714a52d5f4930dbaf2f1cf81872114",
+        "high_priority_selection": {
+          "minimum_specificity": 0.9,
+          "recall": 0.5975155279503106,
+          "specificity": 0.92,
+          "threshold": 0.6327076731651814
+        },
+        "high_priority_threshold": 0.6327076731651814,
+        "method": "nonnegative_two_feature_logistic",
+        "positive_rows": 3100,
+        "random_state": 42,
+        "review_threshold": 0.34069250074943375,
+        "score_semantics": "ReXErr-trained report transfer risk; not a radiologist probability",
+        "selected_method": "nonnegative_two_feature_logistic",
+        "selection_population": {
+          "cases": 1635,
+          "changed_semantic_negative": 25,
+          "semantic_positive": 1610
+        },
+        "selection_report_split_sha256": "447b0c492707caea6156bd5cadc8f5ab19c357ec6551bccb4a0ff5bfd79697fd",
+        "selection_sentence_split_sha256": "1a53f0a4d5c26cb7b5063ca0bd4c25b4f660835201a7e0e2ba9e08b5fb155a8d"
+      }
+    },
+    "role": "patient-disjoint external silver benchmark",
+    "sentence_level": {
+      "ablations": {
+        "bidirectional_aligned": {
+          "accuracy": 0.8878321678321678,
+          "auprc": 0.9409896714109108,
+          "auroc": 0.9504971473756707,
+          "brier": 0.08832009250696964,
+          "ece": 0.05981591029393425,
+          "f1": 0.8521277380337784,
+          "f2": 0.8296949503073477,
+          "false_alerts_per_100_negatives": 6.459684893419833,
+          "fn": 1308,
+          "fp": 697,
+          "mcc": 0.7640820843080155,
+          "n": 17875,
+          "negatives": 10790,
+          "positives": 7085,
+          "precision": 0.8923385851096695,
+          "recall": 0.8153846153846154,
+          "specificity": 0.9354031510658016,
+          "threshold": 0.5,
+          "tn": 10093,
+          "tp": 5777
+        },
+        "bidirectional_raw": {
+          "accuracy": 0.6971748251748252,
+          "auprc": 0.791497433055313,
+          "auroc": 0.8622932705797405,
+          "brier": 0.20964786229241061,
+          "ece": 0.21637395270473575,
+          "f1": 0.45394935942701503,
+          "f2": 0.3609471252566735,
+          "false_alerts_per_100_negatives": 5.35681186283596,
+          "fn": 4835,
+          "fp": 578,
+          "mcc": 0.3538562339686908,
+          "n": 17875,
+          "negatives": 10790,
+          "positives": 7085,
+          "precision": 0.7956152758132956,
+          "recall": 0.3175723359209598,
+          "specificity": 0.9464318813716404,
+          "threshold": 0.5,
+          "tn": 10212,
+          "tp": 2250
+        },
+        "commission_only": {
+          "accuracy": 0.7982097902097902,
+          "auprc": 0.8148463793220608,
+          "auroc": 0.8361465535340429,
+          "brier": 0.1908078444077232,
+          "ece": 0.17571530449830974,
+          "f1": 0.6946067225467784,
+          "f2": 0.6202746023105304,
+          "false_alerts_per_100_negatives": 5.783132530120482,
+          "fn": 2983,
+          "fp": 624,
+          "mcc": 0.5780167773487497,
+          "n": 17875,
+          "negatives": 10790,
+          "positives": 7085,
+          "precision": 0.8679644519678374,
+          "recall": 0.578969654199012,
+          "specificity": 0.9421686746987952,
+          "threshold": 0.5,
+          "tn": 10166,
+          "tp": 4102
+        },
+        "lexical_change": {
+          "accuracy": 0.7653706293706294,
+          "auprc": 0.9923720481556191,
+          "auroc": 0.9957035677589027,
+          "brier": 0.18555275336501978,
+          "ece": 0.2103987869633209,
+          "f1": 0.5796752856283824,
+          "f2": 0.46297185669003943,
+          "false_alerts_per_100_negatives": 0.009267840593141797,
+          "fn": 4193,
+          "fp": 1,
+          "mcc": 0.5419776194324228,
+          "n": 17875,
+          "negatives": 10790,
+          "positives": 7085,
+          "precision": 0.9996543380573799,
+          "recall": 0.4081863091037403,
+          "specificity": 0.9999073215940686,
+          "threshold": 0.5,
+          "tn": 10789,
+          "tp": 2892
+        },
+        "omission_only": {
+          "accuracy": 0.6965594405594405,
+          "auprc": 0.6341431622103575,
+          "auroc": 0.594391242839007,
+          "brier": 0.28052831819387236,
+          "ece": 0.2599140050625836,
+          "f1": 0.489553924336533,
+          "f2": 0.40792321445374985,
+          "false_alerts_per_100_negatives": 8.71177015755329,
+          "fn": 4484,
+          "fp": 940,
+          "mcc": 0.3436257393227393,
+          "n": 17875,
+          "negatives": 10790,
+          "positives": 7085,
+          "precision": 0.7345382660265461,
+          "recall": 0.3671136203246295,
+          "specificity": 0.9128822984244671,
+          "threshold": 0.5,
+          "tn": 9850,
+          "tp": 2601
+        }
+      },
+      "confidence_intervals": {
+        "auprc": {
+          "estimate": 0.9409896714109108,
+          "lower": 0.9371831734222642,
+          "samples": 1000,
+          "upper": 0.9448182774893643
+        },
+        "auroc": {
+          "estimate": 0.9504971473756707,
+          "lower": 0.9470411364378492,
+          "samples": 1000,
+          "upper": 0.9539743379696066
+        },
+        "recall": {
+          "estimate": 0.8153846153846154,
+          "lower": 0.8054376866258054,
+          "samples": 1000,
+          "upper": 0.8253182461103253
+        },
+        "specificity": {
+          "estimate": 0.9354031510658016,
+          "lower": 0.9284773197816676,
+          "samples": 1000,
+          "upper": 0.9418285365605614
+        }
+      },
+      "error_type_recall": {
+        "Add medical device": {
+          "mean_risk": 0.9988619929381416,
+          "n": 910,
+          "recall": 0.9989010989010989,
+          "recall_95ci": [
+            0.9938018077882222,
+            0.9998059906276733
+          ]
+        },
+        "Change location": {
+          "mean_risk": 0.7008442151147567,
+          "n": 950,
+          "recall": 0.7347368421052631,
+          "recall_95ci": [
+            0.7057589963489339,
+            0.7618239503510588
+          ]
+        },
+        "Change measurement": {
+          "mean_risk": 0.8348527333974988,
+          "n": 67,
+          "recall": 0.8955223880597015,
+          "recall_95ci": [
+            0.7996871695126198,
+            0.9484623023121713
+          ]
+        },
+        "Change name of device": {
+          "mean_risk": 0.4146795870616432,
+          "n": 414,
+          "recall": 0.32367149758454106,
+          "recall_95ci": [
+            0.28040184820990127,
+            0.37018332729645725
+          ]
+        },
+        "Change position of device": {
+          "mean_risk": 0.5908617046592775,
+          "n": 438,
+          "recall": 0.5616438356164384,
+          "recall_95ci": [
+            0.5148391111217141,
+            0.6073766722140774
+          ]
+        },
+        "Change severity": {
+          "mean_risk": 0.5988959287881687,
+          "n": 849,
+          "recall": 0.6348645465253239,
+          "recall_95ci": [
+            0.6019380534973575,
+            0.6665760972061745
+          ]
+        },
+        "False negation": {
+          "mean_risk": 0.9016995667901253,
+          "n": 1398,
+          "recall": 0.9170243204577968,
+          "recall_95ci": [
+            0.901396492593554,
+            0.9303666091917955
+          ]
+        },
+        "False prediction": {
+          "mean_risk": 0.9137332132986203,
+          "n": 2059,
+          "recall": 0.9271491015055853,
+          "recall_95ci": [
+            0.9151102737814506,
+            0.9375970404324119
+          ]
+        }
+      },
+      "metrics": {
+        "accuracy": 0.8878321678321678,
+        "auprc": 0.9409896714109108,
+        "auroc": 0.9504971473756707,
+        "brier": 0.08832009250696964,
+        "ece": 0.05981591029393425,
+        "f1": 0.8521277380337784,
+        "f2": 0.8296949503073477,
+        "false_alerts_per_100_negatives": 6.459684893419833,
+        "fn": 1308,
+        "fp": 697,
+        "mcc": 0.7640820843080155,
+        "n": 17875,
+        "negatives": 10790,
+        "positives": 7085,
+        "precision": 0.8923385851096695,
+        "recall": 0.8153846153846154,
+        "specificity": 0.9354031510658016,
+        "threshold": 0.5,
+        "tn": 10093,
+        "tp": 5777
+      },
+      "pair_structure_recall": {
+        "addition": {
+          "n": 2143,
+          "recall": 0.9995333644423705,
+          "recall_95ci": [
+            0.9973614224680897,
+            0.9999176226161693
+          ]
+        },
+        "deletion": {
+          "n": 476,
+          "recall": 0.9873949579831933,
+          "recall_95ci": [
+            0.9727755176999969,
+            0.9942105387786832
+          ]
+        },
+        "substitution": {
+          "n": 4466,
+          "recall": 0.7086878638602776,
+          "recall_95ci": [
+            0.6951871656549188,
+            0.7218298621686564
+          ]
+        }
+      }
+    },
+    "task": "reference-grounded semantic error detection",
+    "test_population": {
+      "error_types": {
+        "Add medical device": 910,
+        "Add repetition": 380,
+        "Add typo": 1131,
+        "Change location": 950,
+        "Change measurement": 67,
+        "Change name of device": 414,
+        "Change position of device": 438,
+        "Change severity": 849,
+        "Change to homophone": 127,
+        "False negation": 1398,
+        "False prediction": 2059
+      },
+      "pair_structures": {
+        "addition": 2523,
+        "deletion": 476,
+        "substitution": 16860
+      },
+      "roles": {
+        "clean_control": 10790,
+        "linguistic_error": 1638,
+        "neutral_excluded": 346,
+        "semantic_error": 7085
+      },
+      "rows": 19859,
+      "unique_studies": 2708,
+      "unique_subjects": 289
+    },
+    "validation_population": {
+      "error_types": {
+        "Add medical device": 571,
+        "Change location": 516,
+        "Change measurement": 55,
+        "Change name of device": 202,
+        "Change position of device": 201,
+        "Change severity": 445,
+        "False negation": 779,
+        "False prediction": 1261
+      },
+      "pair_structures": {
+        "addition": 1350,
+        "deletion": 259,
+        "substitution": 8582
+      },
+      "roles": {
+        "clean_control": 6161,
+        "semantic_error": 4030
+      },
+      "rows": 10191,
+      "unique_studies": 1626,
+      "unique_subjects": 480
+    }
+  },
+  "schema": "vigil-rad.evaluation.v1",
+  "seed": 42,
+  "title": "Reciprocal evidence auditing for radiology summaries",
+  "unlabelled_robustness": {
+    "policy": "No accuracy, agreement, or factuality score is reported without independent labels.",
+    "status": "available_unscored"
+  }
+}

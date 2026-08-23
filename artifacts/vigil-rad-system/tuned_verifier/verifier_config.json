@@ -1,0 +1,21 @@
+{
+  "apply_rule_overrides": true,
+  "artifact_version": 1,
+  "feature_schema": "sentence-plus-global-nli-v2",
+  "has_fusion_model": true,
+  "local_files_only": true,
+  "nli_device": "cuda",
+  "nli_max_length": 384,
+  "nli_model": "artifacts/vigil-rad-clinical-nli/best",
+  "nli_temperature": null,
+  "review_threshold": 0.52,
+  "rule_override_thresholds": {
+    "entity_substitution_mismatch": 0.6,
+    "laterality_mismatch": 0.5,
+    "measurement_mismatch": 0.3,
+    "negation_mismatch": 0.3,
+    "severity_mismatch": 0.55,
+    "temporal_mismatch": 0.45
+  },
+  "top_k": 3
+}

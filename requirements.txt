@@ -1,0 +1,5 @@
+# Streamlit Community Cloud profile: CPU-only PyTorch plus the sealed dependency lock.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.13.0+cpu
+-r requirements-lock.txt
+

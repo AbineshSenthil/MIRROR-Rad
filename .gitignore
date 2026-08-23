@@ -1,0 +1,60 @@
+# Public Streamlit deployment: deny every root item unless it is explicitly allowed below.
+/*
+
+# Repository metadata and public documentation
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/LICENSE
+!/THIRD_PARTY_NOTICES.md
+
+# Streamlit entrypoint and reproducible runtime declarations
+!/app.py
+!/requirements.txt
+!/requirements-lock.txt
+!/packages.txt
+!/.python-version
+!/.streamlit/
+/.streamlit/*
+!/.streamlit/config.toml
+
+# Sealed Python engine
+!/src/
+!/src/**/
+!/src/**/*.py
+
+# Exact operational model assets only
+!/artifacts/
+/artifacts/*
+!/artifacts/vigil-rad-system/
+/artifacts/vigil-rad-system/*
+!/artifacts/vigil-rad-system/tuned_verifier/
+/artifacts/vigil-rad-system/tuned_verifier/*
+!/artifacts/vigil-rad-system/tuned_verifier/verifier_config.json
+!/artifacts/vigil-rad-system/tuned_verifier/fusion_model.pkl
+!/artifacts/vigil-rad-clinical-nli/
+/artifacts/vigil-rad-clinical-nli/*
+!/artifacts/vigil-rad-clinical-nli/best/
+/artifacts/vigil-rad-clinical-nli/best/*
+!/artifacts/vigil-rad-clinical-nli/best/calibration.json
+!/artifacts/vigil-rad-clinical-nli/best/config.json
+!/artifacts/vigil-rad-clinical-nli/best/model.safetensors
+!/artifacts/vigil-rad-clinical-nli/best/special_tokens_map.json
+!/artifacts/vigil-rad-clinical-nli/best/tokenizer_config.json
+!/artifacts/vigil-rad-clinical-nli/best/tokenizer.json
+!/artifacts/vigil-rad-clinical-nli/best/vocab.txt
+!/artifacts/vigil-rad-risk-calibrator.pkl
+!/artifacts/vigil-rad-release.json
+
+# Aggregate-only evaluation evidence; row-level predictions and report text stay private
+!/reports/
+/reports/*
+!/reports/public/
+/reports/public/*
+!/reports/public/evaluation_summary.json
+
+# Defense in depth for caches and generated Python files inside allowed directories
+**/__pycache__/
+*.py[cod]
+*.pyd
+
