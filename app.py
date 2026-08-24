@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import csv
 import hashlib
-import importlib
 import importlib.metadata
 import io
 import json
@@ -22,10 +21,18 @@ import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 SOURCE_ROOT = PROJECT_ROOT / "src"
-if str(SOURCE_ROOT) not in sys.path:
-    sys.path.insert(0, str(SOURCE_ROOT))
+SOURCE_ENTRY = str(SOURCE_ROOT)
+while SOURCE_ENTRY in sys.path:
+    sys.path.remove(SOURCE_ENTRY)
+sys.path.insert(0, SOURCE_ENTRY)
 
-from radtrace import release as release_runtime
+# A long-lived Streamlit Cloud worker can retain modules from a previously
+# installed project package. Remove them before importing so the checksum
+# validator and inference engine always come from this sealed repository.
+for module_name in tuple(sys.modules):
+    if module_name == "radtrace" or module_name.startswith("radtrace."):
+        sys.modules.pop(module_name, None)
+
 from radtrace.bidirectional import (
     BidirectionalAuditor,
     BidirectionalAuditResult,
@@ -45,6 +52,7 @@ from radtrace.product import (
     PRODUCT_NAME,
     RESEARCH_NOTICE,
 )
+from radtrace.release import validate_release_manifest
 from radtrace.showcase import SHOWCASE_CASES, SHOWCASE_CASES_BY_ID, showcase_dataset_csv
 from radtrace.types import AuditResult
 from radtrace.ui_components import (
@@ -62,12 +70,6 @@ from radtrace.upload import (
     upload_template_csv,
 )
 from radtrace.verifier import RadTraceVerifier
-
-# Streamlit Cloud can rerun ``app.py`` inside a long-lived interpreter after a
-# repository update. Reload this small validator module so a newly sealed
-# manifest is never compared with constants retained from the previous build.
-release_runtime = importlib.reload(release_runtime)
-validate_release_manifest = release_runtime.validate_release_manifest
 
 
 def _runtime_path(variable: str, default: str) -> Path:
