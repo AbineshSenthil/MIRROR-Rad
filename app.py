@@ -286,6 +286,12 @@ def _validated_release(
         ]
         result["errors"] = remaining_errors
         result["valid"] = not remaining_errors
+    elif schema_error in result.get("errors", []):
+        result["errors"].append(
+            "Schema diagnostic: "
+            f"observed={observed_schema!r}; expected={RELEASE_SCHEMA!r}; "
+            f"validator={Path(release_runtime.__file__).as_posix()}"
+        )
     return result
 
 
