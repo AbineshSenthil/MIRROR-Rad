@@ -90,6 +90,7 @@ NLI_BATCH_SIZE = max(1, int(os.getenv("MIRROR_RAD_NLI_BATCH_SIZE", "8")))
 AUDIT_SCHEMA = "mirror-rad.bidirectional-audit.v1"
 BATCH_SCHEMA = "mirror-rad.batch-audit.v1"
 RELEASE_SCHEMA = "mirror-rad.release.v1"
+RELEASE_VALIDATOR_REVISION = "mirror-rad-release-validation-2026-08-24"
 INFERENCE_GATE = threading.BoundedSemaphore(value=1)
 
 st.set_page_config(
@@ -267,8 +268,9 @@ def _release_fingerprint(path: Path) -> tuple[tuple[str, int, int], ...]:
 def _validated_release(
     manifest_path: str,
     fingerprint: tuple[tuple[str, int, int], ...],
+    validator_revision: str,
 ) -> dict[str, Any]:
-    del fingerprint
+    del fingerprint, validator_revision
     # Enforce the application's declared schema even if a long-lived cloud
     # worker retained an older validator module before this script restarted.
     release_runtime.RELEASE_SCHEMA = RELEASE_SCHEMA
@@ -343,6 +345,7 @@ def artifact_health() -> dict[str, Any]:
     release = _validated_release(
         str(RELEASE_MANIFEST),
         _release_fingerprint(RELEASE_MANIFEST),
+        RELEASE_VALIDATOR_REVISION,
     )
     ledger = _read_json(EVALUATION_SUMMARY)
     ledger_valid = bool(
