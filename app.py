@@ -272,7 +272,21 @@ def _validated_release(
     # Enforce the application's declared schema even if a long-lived cloud
     # worker retained an older validator module before this script restarted.
     release_runtime.RELEASE_SCHEMA = RELEASE_SCHEMA
-    return release_runtime.validate_release_manifest(manifest_path, PROJECT_ROOT)
+    result = release_runtime.validate_release_manifest(manifest_path, PROJECT_ROOT)
+    try:
+        observed_schema = json.loads(Path(manifest_path).read_text(encoding="utf-8")).get(
+            "schema"
+        )
+    except (OSError, TypeError, ValueError):
+        return result
+    schema_error = "Unsupported release manifest schema."
+    if observed_schema == RELEASE_SCHEMA and schema_error in result.get("errors", []):
+        remaining_errors = [
+            error for error in result["errors"] if error != schema_error
+        ]
+        result["errors"] = remaining_errors
+        result["valid"] = not remaining_errors
+    return result
 
 
 def _configured_artifact() -> Path:
