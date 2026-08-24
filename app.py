@@ -33,6 +33,7 @@ for module_name in tuple(sys.modules):
     if module_name == "radtrace" or module_name.startswith("radtrace."):
         sys.modules.pop(module_name, None)
 
+from radtrace import release as release_runtime
 from radtrace.bidirectional import (
     BidirectionalAuditor,
     BidirectionalAuditResult,
@@ -52,7 +53,6 @@ from radtrace.product import (
     PRODUCT_NAME,
     RESEARCH_NOTICE,
 )
-from radtrace.release import validate_release_manifest
 from radtrace.showcase import SHOWCASE_CASES, SHOWCASE_CASES_BY_ID, showcase_dataset_csv
 from radtrace.types import AuditResult
 from radtrace.ui_components import (
@@ -89,6 +89,7 @@ BATCH_REPORTS = max(1, int(os.getenv("MIRROR_RAD_BATCH_REPORTS", "8")))
 NLI_BATCH_SIZE = max(1, int(os.getenv("MIRROR_RAD_NLI_BATCH_SIZE", "8")))
 AUDIT_SCHEMA = "mirror-rad.bidirectional-audit.v1"
 BATCH_SCHEMA = "mirror-rad.batch-audit.v1"
+RELEASE_SCHEMA = "mirror-rad.release.v1"
 INFERENCE_GATE = threading.BoundedSemaphore(value=1)
 
 st.set_page_config(
@@ -268,7 +269,10 @@ def _validated_release(
     fingerprint: tuple[tuple[str, int, int], ...],
 ) -> dict[str, Any]:
     del fingerprint
-    return validate_release_manifest(manifest_path, PROJECT_ROOT)
+    # Enforce the application's declared schema even if a long-lived cloud
+    # worker retained an older validator module before this script restarted.
+    release_runtime.RELEASE_SCHEMA = RELEASE_SCHEMA
+    return release_runtime.validate_release_manifest(manifest_path, PROJECT_ROOT)
 
 
 def _configured_artifact() -> Path:
