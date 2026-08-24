@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import importlib
 import importlib.metadata
 import io
 import json
@@ -24,6 +25,7 @@ SOURCE_ROOT = PROJECT_ROOT / "src"
 if str(SOURCE_ROOT) not in sys.path:
     sys.path.insert(0, str(SOURCE_ROOT))
 
+from radtrace import release as release_runtime
 from radtrace.bidirectional import (
     BidirectionalAuditor,
     BidirectionalAuditResult,
@@ -43,7 +45,6 @@ from radtrace.product import (
     PRODUCT_NAME,
     RESEARCH_NOTICE,
 )
-from radtrace.release import validate_release_manifest
 from radtrace.showcase import SHOWCASE_CASES, SHOWCASE_CASES_BY_ID, showcase_dataset_csv
 from radtrace.types import AuditResult
 from radtrace.ui_components import (
@@ -61,6 +62,12 @@ from radtrace.upload import (
     upload_template_csv,
 )
 from radtrace.verifier import RadTraceVerifier
+
+# Streamlit Cloud can rerun ``app.py`` inside a long-lived interpreter after a
+# repository update. Reload this small validator module so a newly sealed
+# manifest is never compared with constants retained from the previous build.
+release_runtime = importlib.reload(release_runtime)
+validate_release_manifest = release_runtime.validate_release_manifest
 
 
 def _runtime_path(variable: str, default: str) -> Path:
