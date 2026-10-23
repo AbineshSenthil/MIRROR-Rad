@@ -1,83 +1,154 @@
 # MIRROR-Rad
 
-**Mutual Inference and Reciprocal Retrieval for Omission and Risk Detection in Radiology Summaries**
+**Checks a radiology summary against its source report, in both directions.**
 
-MIRROR-Rad is an evidence-grounded clinical NLP application that audits whether a candidate radiology summary is faithful to a supplied source report. It checks the text in both directions so that added or contradicted claims and omitted source findings are handled separately, then exposes the evidence, clinical mismatch signals, confidence, and review priority behind each decision.
+[![CI](https://github.com/AbineshSenthil/mirror-rad/actions/workflows/ci.yml/badge.svg)](https://github.com/AbineshSenthil/mirror-rad/actions/workflows/ci.yml)
+&nbsp;**[Live demo](https://mirror-rad.streamlit.app/)** · [How it works](#how-it-works) · [Results](#results) · [Run it locally](#run-it-locally)
 
-> Research use only. The application compares supplied text with supplied text. It does not inspect radiographs, establish clinical truth, diagnose disease, recommend treatment, or replace qualified review. A public deployment must receive only synthetic or de-identified text—never PHI or identifiable patient data.
+![MIRROR-Rad demo: a faithful summary is routed Routine, a negation reversal and a laterality swap are routed High with the reasons shown, and a batch of report pairs becomes a prioritized review queue](docs/media/demo.gif)
 
-## What is included
+A generated or edited Impression can go wrong in two ways. It can **add or change** something: an invented
+pneumothorax, the wrong side, the wrong severity. Or it can **leave out** a finding from the report. MIRROR-Rad
+splits both texts into short claims, finds the evidence for each claim in the other text, judges it with a
+fine-tuned clinical language model plus explicit clinical checks, and returns a review priority together with the
+exact claims and evidence behind it.
 
-- Fine-tuned BioClinicalBERT three-way NLI for `ENTAILED`, `CONTRADICTED`, and `UNSUPPORTED` claims.
-- Reciprocal candidate-to-source and source-to-candidate evidence retrieval with both raw and clinical-slot-masked TF-IDF matching.
-- Entity-bound semantic-delta checks for negation, laterality, anatomy, severity, temporal status, measurements, device identity, device position, uncertainty, and entity substitution.
-- BioClinicalBERT continued adaptation on patient-disjoint ReXErr training roles with Open-I replay; gradient training, fusion fitting, calibration, and adaptation evaluation remain separate.
-- Multi-domain learned claim fusion, held-out calibration, abstention, count-aware error-mass aggregation, and complete-report review routing.
-- Single-report auditing, guided live examples, CSV/JSON/JSONL dataset upload, bounded batch analysis, and CSV/JSON assurance exports.
-- Aggregate evaluation evidence without raw reports, generated summaries, claims, study identifiers, or row-level prediction ledgers.
-- Fail-closed startup validation for application code, model weights, tokenizer assets, calibration, fusion, routing, and evaluation evidence.
+> **Research use only.** MIRROR-Rad compares text with text. It does not read images, establish clinical truth or
+> replace a radiologist. Never enter identifiable patient data; the public demo is for synthetic or de-identified text.
 
-## Deploy manually on Streamlit Community Cloud
+## How it works
 
-1. Open [Streamlit Community Cloud](https://share.streamlit.io/) and choose **Create app**.
-2. Select repository `AbineshSenthil/MIRROR-Rad`, branch `main`, and entrypoint `app.py`.
-3. Open **Advanced settings** and select **Python 3.11**.
-4. No API key, Hugging Face token, or other secret is required. The trained checkpoint is bundled through Git LFS and inference is offline.
-5. Deploy and allow extra time for the first build to retrieve the approximately 413 MiB LFS checkpoint and load the CPU model.
-
-The repository already contains the root `requirements.txt`, Debian `packages.txt`, `.streamlit/config.toml`, and exact model assets required by Community Cloud. Streamlit officially supports Git LFS-backed repository files.
-
-## Dataset upload contract
-
-The Dataset Lab accepts UTF-8 `.csv`, `.json`, and `.jsonl` files.
-
-| Field | Requirement | Meaning |
-|---|---|---|
-| `findings` | Required | Source report or Findings text used as evidence |
-| `impression` | Required | Candidate summary or Impression to audit |
-| `case_id` | Optional | Stable case identifier; generated when absent |
-| `generator` | Optional | Summary-generator label for grouped review |
-| `site` | Optional | De-identified source/site label |
-| `split` | Optional | Dataset partition label |
-| `subgroup` | Optional | De-identified monitoring group |
-
-Public deployment defaults are 10 MB and 100 validated report pairs per upload, with CPU-safe report and NLI batches of eight. Uploaded content remains in the running application session; on an online deployment it is still transmitted to the hosting service before the application can screen it. The acknowledgement and privacy preflight reduce accidental misuse but are not HIPAA controls.
-
-## Local run
-
-Install Git LFS before cloning so the checkpoint is materialized instead of remaining a pointer file.
-
-```powershell
-git lfs install
-git clone https://github.com/AbineshSenthil/MIRROR-Rad.git
-cd MIRROR-Rad
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install --requirement requirements.txt
-.\.venv\Scripts\python.exe -m streamlit run app.py
+```mermaid
+flowchart LR
+    F[Findings] --> S[Split into claims]
+    I[Impression] --> S
+    S --> C["Summary → Findings<br/>added or conflicting claims"]
+    S --> O["Findings → Summary<br/>omitted findings"]
+    C --> E["Evidence retrieval<br/>TF-IDF + slot-masked match"]
+    O --> E
+    E --> J["Claim judgement<br/>BioClinicalBERT NLI + clinical checks<br/>+ calibrated fusion"]
+    J --> P["Review priority with reasons<br/>+ error-burden score"]
 ```
 
-Open `http://127.0.0.1:8501/`. CPU inference is supported. The application serializes inference and caches one model instance to stay within constrained hosting environments.
+1. **Claims.** Each text is split into checkable statements. Numbered impressions, abbreviations and decimal
+   measurements are handled so "1." or "aneurysms." never break a claim.
+2. **Evidence.** For every claim, the most relevant sentences in the other text are retrieved with TF-IDF, plus a
+   *slot-masked* view in which values such as side, device or severity are masked, so a changed value
+   (left → right, PICC → chest tube) still finds its counterpart.
+3. **Judgement.** A [Bio_ClinicalBERT](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT) model fine-tuned for
+   three-way NLI (supported / contradicted / unsupported) is combined with entity-level checks for negation,
+   laterality, severity, temporal change, measurements and devices, through a calibrated logistic fusion.
+4. **Decision.** Transparent rules ([`src/radtrace/routing.py`](src/radtrace/routing.py)) turn claim decisions into
+   a priority, each with a stated reason:
+   - **High**: a conflict, an invented finding, or a missing critical finding (pneumothorax, free air, lines and tubes).
+   - **Review**: another unsupported or uncertain claim, or a missing non-critical finding.
+   - **Routine**: anything else. Normal statements that a concise impression leaves out ("lungs are clear",
+     "no effusion") do not raise the priority.
 
-## Evidence and interpretation
+   A count-aware **error-burden score** ranks many reports in the Dataset Lab.
 
-The bundled aggregate ledger retains the measured evaluation populations, metrics, confidence intervals, baselines, ablations, and validity boundaries while intentionally excluding dataset rows and report text. The expert-family-quarantined controlled evaluation reports macro-F1 **0.9623**, contradiction recall **0.9538**, unsupported-claim recall **1.0000**, high-risk unsafe recall **0.9928**, and expected calibration error **0.0189**. These values come from controlled counterfactual claims and must not be interpreted as overall accuracy or hospital performance.
+## Results
 
-External evaluation is deliberately separated:
+All numbers come from the bundled aggregate ledger, [`reports/public/evaluation_summary.json`](reports/public/evaluation_summary.json),
+which keeps metrics and confidence intervals but no report text or row-level predictions.
 
-- The final patient-disjoint adaptation-set rerun reports macro-F1 **0.9010**, contradiction recall **0.9150**, unsupported recall **0.8098**, and ECE **0.0077**. The original single-open result was retained, but a later corrective multi-domain fusion fit means the displayed final-artifact rerun is iterative evidence rather than a new pristine holdout.
-- ReXErr measures transfer to clinician-designed synthetic/silver semantic errors. The contextual sentence analysis reports AUROC **0.9943**, AUPRC **0.9914**, recall **0.9811**, and specificity **0.9698**. Its stricter exact-pair-decontaminated slice reports AUROC **0.9911**, AUPRC **0.9885**, recall **0.9817**, and specificity **0.9506**.
-- On the strict unseen-pair ReXErr slice, recall is **0.9506** for device-name changes, **0.9976** for device-position changes, and **0.9754** for severity changes—the categories that motivated the upgrade.
-- Complete-report ReXErr routing reports AUROC **0.9438**, AUPRC **0.9991**, recall **0.9574**, and specificity **0.7059**. Its separate matched-identity false-alert rate is **0.1211**.
-- RadEvalX measures report-level ranking against a small two-radiologist consensus benchmark. The declared count-aware score reports AUROC **0.6740**, AUPRC **0.7572**, and captures **29.8%** of significant error burden at a 20% review budget. CheXbert reports AUROC **0.7415** on the same cohort; the paired MIRROR-Rad-minus-CheXbert AUROC interval is **−0.2154 to 0.0723**, so the apparent difference is not statistically resolved on 100 reports.
-- Natural claim-level accuracy, clinical effectiveness, and multi-site generalization are not claimed.
+| Benchmark | What it tests | Result |
+|---|---|---|
+| **RadEvalX**: 100 generated reports with two-radiologist consensus error labels | Ranking reports that contain clinically significant errors (error-burden score) | AUROC **0.674** (95% CI 0.552–0.781); reviewing the top 20% captures 29.8% of significant errors. CheXbert 0.742 (difference not significant, 95% CI −0.215 to 0.072); BERTScore 0.607, RadCliQ 0.595, BLEU-4 0.581, RadGraph-F1 0.574 |
+| **ReXErr**, sentences in report context: 7,085 clinician-designed errors, 10,790 clean sentences | Catching an injected error in a sentence | AUROC **0.994**, recall 0.981, specificity 0.970. Pairs never seen in training: AUROC 0.991 |
+| **ReXErr adaptation holdout**: 12,266 patient-disjoint claims | Three-way claim classification | Macro-F1 **0.901**, contradiction recall 0.915, unsupported recall 0.810, ECE 0.008 |
+| **Controlled Open-I test**: 2,272 rule-generated claims | Three-way claim classification | Macro-F1 **0.962**, contradiction recall 0.954 |
 
-The external ReXErr and RadEvalX results are explicitly labelled iterative because earlier development inspected those benchmarks. MIRROR-Rad does not hide the weaker RadEvalX result or describe the controlled score as “97% overall accuracy.”
+**Read these with the limits in mind:**
 
-## Deployment contents
+- **RadEvalX is the only human-labelled benchmark.** It has 100 reports, and MIRROR-Rad does not beat CheXbert on it.
+- **Not untouched holdouts.** ReXErr and RadEvalX were looked at during development, so these results are iterative evidence.
+- **The controlled test uses rule-generated edits.** Its unsupported claims come from seven template sentences, so the
+  unsupported recall of 1.000 there mainly shows that the templates are recognised. Even a TF-IDF-only baseline reaches 0.899.
+- **The benchmarks predate version 1.1.** The claim-splitting fixes and rule-based routing (below) have not been re-run
+  on them, because those runs need the licensed datasets.
+- **The archived report router is evaluated but not used.** It scored report-level ReXErr AUROC 0.944, but on 2,674
+  changed reports against only 34 unchanged-meaning ones (MCC 0.34), and it is no longer used for decisions (see below).
 
-Only operational files are published: the Streamlit entrypoint and theme, Python engine, exact dependency declarations, trained checkpoint and tokenizer, calibrated fusion and routing artifacts, integrity manifest, aggregate evaluation ledger, license, and third-party notices. Datasets, report text, benchmark prediction rows, annotation packets, generated summaries, workflow posters, blueprints, research reports, training scripts, tests, caches, local environments, and development outputs are excluded by a positive allowlist.
+## What changed in 1.1
 
-## License and upstream model
+**Review priority now comes from transparent rules instead of a learned router.** The 1.0 router was trained on
+ReXErr report pairs of almost identical length. A real impression is far shorter than its findings, which put the
+router's length feature about 12 standard deviations outside its training range. Concise, faithful impressions were
+routed High, and some invented findings were routed Review or Routine:
 
-Project code is provided under the MIT License. The included checkpoint is fine-tuned from [`emilyalsentzer/Bio_ClinicalBERT`](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT), whose upstream model repository declares the MIT License. See `THIRD_PARTY_NOTICES.md` for attribution and distribution boundaries. No source dataset is distributed in this repository.
+| Findings → summary (demo cases and hand-written examples) | 1.0 router | 1.1 rules |
+|---|---|---|
+| Normal report → "No acute cardiopulmonary abnormality." | High | Routine |
+| Normal report → "Normal chest radiograph." | High | Routine |
+| Demo case "Supported summary" | Review | Routine |
+| "Two small pulmonary nodules. No pneumothorax." → adds "Large right pneumothorax." | Review | High |
+| "Small left pneumothorax. Mild cardiomegaly." → "Mild cardiomegaly." | Routine | High |
+| Demo cases "Laterality conflict" and "Severity change" | Review | High |
+
+These cases are locked in by [`tests/test_model_behaviour.py`](tests/test_model_behaviour.py). The rules were checked
+on the 9 demo cases and 11 hand-written pairs, not re-benchmarked.
+
+**Also fixed:**
+
+- **Dataset Lab crash.** The Dataset Lab no longer crashes after a batch run; it used to fail while opening a case from the queue.
+- **Claim splitting.** Words ending in "ms." ("aneurysms.", "symptoms.") no longer merge two sentences, numbered
+  impressions no longer produce "1." / "2." claims, and "1) … 2) …" lists are split.
+- **`serve` command.** `python -m radtrace serve` finds the bundled evaluation ledger.
+- **Tests and CI.** Added a test suite, CI, `pyproject.toml`, and a one-command reseal script for the release manifest.
+
+## Run it locally
+
+Install [Git LFS](https://git-lfs.com/) first so the 413 MB checkpoint downloads instead of a pointer file.
+Python 3.11 is required.
+
+```bash
+git lfs install
+git clone https://github.com/AbineshSenthil/mirror-rad.git
+cd mirror-rad
+python3.11 -m venv .venv && source .venv/bin/activate   # Windows: py -3.11 -m venv .venv; .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Open <http://localhost:8501>. Inference runs on CPU in a few seconds per report pair.
+
+From the command line:
+
+```bash
+pip install -e . --no-deps
+mirror-rad audit --findings "Small left pneumothorax. No pleural effusion." --impression "Small right pneumothorax."
+```
+
+The Dataset Lab accepts UTF-8 CSV, JSON or JSONL with `findings` and `impression` columns (optional: `case_id`,
+`generator`, `site`, `split`, `subgroup`), up to 100 pairs and 10 MB per upload on the public demo.
+
+## Development
+
+```bash
+pip install -r requirements.txt pytest ruff
+ruff check .
+pytest          # model and app tests run when the real checkpoint is present (git lfs pull)
+```
+
+CI runs lint and the tests on every push without downloading the checkpoint; the model-dependent tests skip there.
+
+The app checks a SHA-256 manifest of its code, model and evidence files before it runs any audit, so a half-updated
+deployment fails closed instead of running a mismatched model. **After changing `app.py` or anything in
+`src/radtrace`, run `python scripts/reseal_release.py` and commit the manifest with your change.** CI fails if you forget.
+
+```
+app.py                      Streamlit app (five pages)
+src/radtrace/               engine: text, retrieval, clinical_rules, nli, verifier, bidirectional, routing
+artifacts/                  fine-tuned checkpoint (Git LFS), fusion model, archived router, release manifest
+reports/public/             aggregate evaluation ledger
+tests/                      unit, model-behaviour and Streamlit smoke tests
+scripts/reseal_release.py   regenerate the release manifest
+```
+
+## Data and licensing
+
+Project code is MIT-licensed. The checkpoint is fine-tuned from `emilyalsentzer/Bio_ClinicalBERT` (MIT); see
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). No dataset is redistributed here. Training and evaluation used the
+public Open-I chest X-ray reports, plus ReXErr and RadEvalX under their own licences. The demo cases are de-identified
+Open-I excerpts, some with controlled edits.
