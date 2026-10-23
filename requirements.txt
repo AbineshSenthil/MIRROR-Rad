@@ -1,5 +1,5 @@
 # Streamlit Community Cloud profile: CPU-only PyTorch plus the sealed dependency lock.
-# Runtime refresh marker: 2026-08-24 sealed-integrity validator.
+# Runtime refresh marker: 2026-10-23 v1.1 rule-based review routing (forces a clean Streamlit Cloud rebuild).
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.13.0+cpu
 -r requirements-lock.txt
