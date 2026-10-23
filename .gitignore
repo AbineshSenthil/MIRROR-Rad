@@ -7,6 +7,18 @@
 !/README.md
 !/LICENSE
 !/THIRD_PARTY_NOTICES.md
+!/docs/
+/docs/*
+!/docs/media/
+
+# Development: packaging, tests, CI and release tooling (no data, no report text)
+!/pyproject.toml
+!/.github/
+!/tests/
+!/tests/*.py
+!/scripts/
+/scripts/*
+!/scripts/reseal_release.py
 
 # Streamlit entrypoint and reproducible runtime declarations
 !/app.py
@@ -57,3 +69,6 @@
 **/__pycache__/
 *.py[cod]
 *.pyd
+*.egg-info/
+.pytest_cache/
+.ruff_cache/

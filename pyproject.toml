@@ -1,0 +1,58 @@
+# Local development and CI.  Streamlit Community Cloud installs from
+# requirements.txt, which takes precedence over this file in the same folder.
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mirror-rad"
+version = "1.1.0"
+description = "Audits a radiology summary against its source report in both directions: added or conflicting claims, and omitted findings."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "Abinesh S" }]
+keywords = ["radiology", "nlp", "factuality", "nli", "clinical-nlp", "streamlit"]
+dependencies = [
+    "torch>=2.4",
+    "transformers>=4.44,<5",
+    "safetensors>=0.4",
+    "tokenizers>=0.19",
+    # The bundled fusion and router models are pickled with this exact version.
+    "scikit-learn==1.9.0",
+    "numpy>=2.0",
+    "scipy>=1.13",
+    "joblib>=1.4",
+    "pandas>=2.2",
+    "plotly>=5.20",
+    "streamlit>=1.61",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+mirror-rad = "radtrace.cli:main"
+
+[project.urls]
+Demo = "https://mirror-rad.streamlit.app/"
+Source = "https://github.com/AbineshSenthil/mirror-rad"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["artifacts", "reports"]
+
+[tool.ruff.lint]
+# Syntax errors, undefined names and unused imports.
+select = ["E9", "F"]
