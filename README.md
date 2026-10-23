@@ -40,12 +40,14 @@ flowchart LR
    laterality, severity, temporal change, measurements and devices, through a calibrated logistic fusion.
 4. **Decision.** Transparent rules ([`src/radtrace/routing.py`](src/radtrace/routing.py)) turn claim decisions into
    a priority, each with a stated reason:
-   - **High**: a conflict, an invented finding, or a missing critical finding (pneumothorax, free air, lines and tubes).
+   - **High**: a conflict, an invented finding, or a missing critical finding (pneumothorax, free air, airway
+     tubes, central lines, chest tubes, enteric tubes, pacemakers and defibrillators).
    - **Review**: another unsupported or uncertain claim, or a missing non-critical finding.
    - **Routine**: anything else. Normal statements that a concise impression leaves out ("lungs are clear",
      "no effusion") do not raise the priority.
 
-   A count-aware **error-burden score** ranks many reports in the Dataset Lab.
+   In the Dataset Lab, reports are sorted by priority, then by a count-aware **error-burden score** (the score
+   evaluated on RadEvalX). That score still counts omitted normal statements, so it is a tie-breaker, not a verdict.
 
 ## Results
 
@@ -54,8 +56,8 @@ which keeps metrics and confidence intervals but no report text or row-level pre
 
 | Benchmark | What it tests | Result |
 |---|---|---|
-| **RadEvalX**: 100 generated reports with two-radiologist consensus error labels | Ranking reports that contain clinically significant errors (error-burden score) | AUROC **0.674** (95% CI 0.552–0.781); reviewing the top 20% captures 29.8% of significant errors. CheXbert 0.742 (difference not significant, 95% CI −0.215 to 0.072); BERTScore 0.607, RadCliQ 0.595, BLEU-4 0.581, RadGraph-F1 0.574 |
-| **ReXErr**, sentences in report context: 7,085 clinician-designed errors, 10,790 clean sentences | Catching an injected error in a sentence | AUROC **0.994**, recall 0.981, specificity 0.970. Pairs never seen in training: AUROC 0.991 |
+| **RadEvalX**: 100 generated reports with two-radiologist consensus error labels | Ranking reports that contain clinically significant errors (error-burden score) | AUROC **0.674** (95% CI 0.552–0.781); reviewing the top 20% captures 29.8% of significant errors. CheXbert 0.742; the MIRROR-Rad minus CheXbert difference is not significant (95% CI −0.215 to 0.072). BERTScore 0.607, RadCliQ 0.595, BLEU-4 0.581, RadGraph-F1 0.574 |
+| **ReXErr**, sentences in report context: 7,085 clinician-designed errors, 10,790 clean sentences | Catching an injected error in a sentence | AUROC **0.955** with the shipped error-burden score (recall 0.623, specificity 0.937). An extra sentence-level calibrator fitted on ReXErr, which is not shipped, reaches AUROC 0.994 |
 | **ReXErr adaptation holdout**: 12,266 patient-disjoint claims | Three-way claim classification | Macro-F1 **0.901**, contradiction recall 0.915, unsupported recall 0.810, ECE 0.008 |
 | **Controlled Open-I test**: 2,272 rule-generated claims | Three-way claim classification | Macro-F1 **0.962**, contradiction recall 0.954 |
 
@@ -63,8 +65,9 @@ which keeps metrics and confidence intervals but no report text or row-level pre
 
 - **RadEvalX is the only human-labelled benchmark.** It has 100 reports, and MIRROR-Rad does not beat CheXbert on it.
 - **Not untouched holdouts.** ReXErr and RadEvalX were looked at during development, so these results are iterative evidence.
-- **The controlled test uses rule-generated edits.** Its unsupported claims come from seven template sentences, so the
-  unsupported recall of 1.000 there mainly shows that the templates are recognised. Even a TF-IDF-only baseline reaches 0.899.
+- **The controlled test uses rule-generated edits.** Its unsupported claims come from seven template sentences
+  (`_UNSUPPORTED_CLAIMS` in [`src/radtrace/mutations.py`](src/radtrace/mutations.py)), so the unsupported recall of
+  1.000 there mainly shows that the templates are recognised. Even a TF-IDF-only baseline reaches 0.899.
 - **The benchmarks predate version 1.1.** The claim-splitting fixes and rule-based routing (below) have not been re-run
   on them, because those runs need the licensed datasets.
 - **The archived report router is evaluated but not used.** It scored report-level ReXErr AUROC 0.944, but on 2,674
@@ -74,8 +77,8 @@ which keeps metrics and confidence intervals but no report text or row-level pre
 
 **Review priority now comes from transparent rules instead of a learned router.** The 1.0 router was trained on
 ReXErr report pairs of almost identical length. A real impression is far shorter than its findings, which put the
-router's length feature about 12 standard deviations outside its training range. Concise, faithful impressions were
-routed High, and some invented findings were routed Review or Routine:
+router's length feature 5 to 14 standard deviations outside its training range in the examples below. Concise,
+faithful impressions were routed High, an invented pneumothorax Review, and an omitted pneumothorax Routine:
 
 | Findings → summary (demo cases and hand-written examples) | 1.0 router | 1.1 rules |
 |---|---|---|
@@ -87,13 +90,14 @@ routed High, and some invented findings were routed Review or Routine:
 | Demo cases "Laterality conflict" and "Severity change" | Review | High |
 
 These cases are locked in by [`tests/test_model_behaviour.py`](tests/test_model_behaviour.py). The rules were checked
-on the 9 demo cases and 11 hand-written pairs, not re-benchmarked.
+on the 9 demo cases and 11 hand-written pairs; they have not been re-benchmarked.
 
 **Also fixed:**
 
 - **Dataset Lab crash.** The Dataset Lab no longer crashes after a batch run; it used to fail while opening a case from the queue.
 - **Claim splitting.** Words ending in "ms." ("aneurysms.", "symptoms.") no longer merge two sentences, numbered
-  impressions no longer produce "1." / "2." claims, and "1) … 2) …" lists are split.
+  impressions no longer produce "1." / "2." claims, "1) … 2) …" lists are split, and a lead-in such as "Lines:"
+  stays with its item.
 - **`serve` command.** `python -m radtrace serve` finds the bundled evaluation ledger.
 - **Tests and CI.** Added a test suite, CI, `pyproject.toml`, and a one-command reseal script for the release manifest.
 
@@ -131,7 +135,7 @@ ruff check .
 pytest          # model and app tests run when the real checkpoint is present (git lfs pull)
 ```
 
-CI runs lint and the tests on every push without downloading the checkpoint; the model-dependent tests skip there.
+CI runs lint and the tests on every push to `main` and every pull request, without downloading the checkpoint; the model-dependent tests skip there.
 
 The app checks a SHA-256 manifest of its code, model and evidence files before it runs any audit, so a half-updated
 deployment fails closed instead of running a mismatched model. **After changing `app.py` or anything in

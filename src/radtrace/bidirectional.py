@@ -217,7 +217,7 @@ class BidirectionalAuditResult:
             alignment_applied=bool(value["alignment_applied"]),
             review_priority=str(value["review_priority"]),
             scope=str(value.get("scope", "textual consistency review")),
-            priority_reasons=[str(item) for item in value.get("priority_reasons", [])],
+            priority_reasons=[str(item) for item in value.get("priority_reasons") or []],
             routing_method=str(value.get("routing_method", "legacy-threshold")),
         )
 

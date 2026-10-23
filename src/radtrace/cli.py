@@ -49,7 +49,7 @@ def _run_script(name: str, arguments: Sequence[str]) -> int:
     if not script.is_file():
         raise SystemExit(
             f"scripts/{name} is not in this checkout. Training and benchmark scripts need the "
-            "licensed datasets described in README.md (Reproducing the results)."
+            "licensed datasets described in README.md (Data and licensing)."
         )
     command = [sys.executable, str(script), *arguments]
     return subprocess.call(command, cwd=PROJECT_ROOT)

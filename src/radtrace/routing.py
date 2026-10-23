@@ -43,6 +43,16 @@ from .types import AuditResult, ClaimAudit, ErrorType, Label
 
 ROUTING_METHOD = "clinical-rules-v1"
 PRIORITY_ORDER = {"ROUTINE": 0, "REVIEW": 1, "HIGH": 2}
+# Findings whose omission or invention is always High priority: the project's
+# critical entities (pneumothorax, free air, airway tubes, central lines, chest
+# tubes, cardiac devices, balloon pump) plus enteric tubes, whose position is
+# safety-critical.
+PRIORITY_CRITICAL_ENTITIES = frozenset(CRITICAL_ENTITIES) | {
+    "nasogastric tube",
+    "orogastric tube",
+    "feeding tube",
+    "enteric tube",
+}
 
 _CONFLICT_TYPES = frozenset(
     {
@@ -111,7 +121,7 @@ def _commission_decision(claim: ClaimAudit, source: _TextEntities) -> tuple[str,
     if claim.label == Label.CONTRADICTED and not conflicts and not entities.present:
         # A negative claim ("No pleural effusion.") whose absence the source
         # also states is consistent by rule even if the model flags a conflict.
-        if entities.negated and entities.negated <= source.negated:
+        if entities.negated and entities.negated <= source.negated and not entities.negated & source.present:
             return "REVIEW", (
                 "Model flags a conflict, but the source states the same absence: "
                 f"{_quote(claim.claim)}"
@@ -141,7 +151,7 @@ def _omission_decision(claim: ClaimAudit, summary: _TextEntities) -> tuple[str, 
         # not an omission; attribute changes are judged in the summary→source
         # direction.
         return None
-    critical = sorted(present & CRITICAL_ENTITIES)
+    critical = sorted(present & PRIORITY_CRITICAL_ENTITIES)
     if critical:
         return "HIGH", (
             f"Summary omits a critical source finding ({', '.join(critical)}): {_quote(claim.claim)}"

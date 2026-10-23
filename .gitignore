@@ -10,11 +10,18 @@
 !/docs/
 /docs/*
 !/docs/media/
+/docs/media/*
+!/docs/media/*.gif
 
 # Development: packaging, tests, CI and release tooling (no data, no report text)
 !/pyproject.toml
 !/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/*.yml
 !/tests/
+/tests/*
 !/tests/*.py
 !/scripts/
 /scripts/*

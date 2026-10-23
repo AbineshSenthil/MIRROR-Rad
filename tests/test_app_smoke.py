@@ -34,7 +34,9 @@ def test_demo_supported_summary_is_routine():
     at.checkbox(key="audit_acknowledgement").check().run()
     next(b for b in at.button if b.label.startswith("Run reciprocal evidence audit")).click().run()
     assert not at.exception
-    assert "Routine review queue" in _markdown(at)
+    text = _markdown(at)
+    assert "Routine review queue" in text
+    assert "Items to check" in text
 
 
 def test_dataset_lab_runs_showcase_and_opens_a_case():

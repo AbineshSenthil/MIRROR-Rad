@@ -157,3 +157,25 @@ def test_reasons_put_high_first_and_are_unique():
     assert decision.priority == "HIGH"
     assert decision.reasons[0].startswith("Summary conflicts")
     assert len(decision.reasons) == len(set(decision.reasons)) == 2
+
+
+def test_same_absence_downgrade_requires_the_source_not_to_report_the_finding():
+    decision = route(
+        "No effusion on the left. Small right pleural effusion.",
+        "No pleural effusion.",
+        [claim("No pleural effusion.", Label.CONTRADICTED)],
+        [claim("Small right pleural effusion.", Label.UNSUPPORTED)],
+    )
+    assert decision.priority == "HIGH"
+    assert decision.reasons[0].startswith("Summary conflicts with the source")
+
+
+def test_omitted_enteric_tube_is_high():
+    decision = route(
+        "Nasogastric tube tip in the stomach. Lungs are clear.",
+        "Lungs are clear.",
+        [claim("Lungs are clear.", Label.ENTAILED)],
+        [claim("Nasogastric tube tip in the stomach.", Label.UNSUPPORTED)],
+    )
+    assert decision.priority == "HIGH"
+    assert "nasogastric tube" in decision.reasons[0]

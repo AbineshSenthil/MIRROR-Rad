@@ -54,6 +54,8 @@ def test_clinically_significant_errors_are_high(auditor, findings, impression):
         ("showcase-temporal-327", "HIGH"),
         ("showcase-omission-025", "REVIEW"),
         ("showcase-unsupported-014", "HIGH"),
+        # Drops only negative findings, which a concise impression may omit.
+        ("showcase-llm-omission-417", "ROUTINE"),
         ("showcase-llm-preservation-0c33", "ROUTINE"),
     ],
 )

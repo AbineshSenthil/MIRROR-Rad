@@ -50,6 +50,20 @@ def test_claim_split_regressions(text, expected):
             ["No edema or pleural effusion", "mild cardiomegaly."],
         ),
         ("Pleural effusion: no.", ["Pleural effusion: no."]),
+        # Parenthesised numbers inside a sentence are content, not list items.
+        ("Status post CABG (2) sternal wires intact.", ["Status post CABG (2) sternal wires intact."]),
+        ("Findings (1) consolidation and (2) effusion", ["Findings (1) consolidation and (2) effusion"]),
+        # A lead-in ending with a colon stays with the item that follows it.
+        (
+            "There are 2 nodules: 1. Left upper lobe 5 mm. 2. Right lower lobe 4 mm.",
+            ["There are 2 nodules: Left upper lobe 5 mm.", "Right lower lobe 4 mm."],
+        ),
+        (
+            "Lines: 1. ETT 4 cm above the carina. 2. Right PICC tip in the SVC.",
+            ["Lines: ETT 4 cm above the carina.", "Right PICC tip in the SVC."],
+        ),
+        ("(1) No acute process. (2) Stable cardiomegaly.", ["No acute process.", "Stable cardiomegaly."]),
+        ("no acute process. heart size normal.", ["no acute process.", "heart size normal."]),
     ],
 )
 def test_claim_split_preserves_clinical_meaning(text, expected):
@@ -66,3 +80,10 @@ def test_normalize_text_marks_openi_redactions_and_keeps_case():
     assert normalize_text("Seen on XXXX  study.\r\nNo   pneumothorax") == (
         "Seen on [REDACTED] study.\nNo pneumothorax"
     )
+
+
+def test_claim_split_never_drops_numbers_in_running_text():
+    claims = claim_split("Fractures of the left 4. 5. and 6. ribs.")
+    joined = " ".join(claims)
+    for number in ("4", "5", "6"):
+        assert number in joined

@@ -27,8 +27,11 @@ _ABBREVIATION_PATTERNS = (
 # Enumeration markers such as "1." or "2)" at the start of the text or after a
 # sentence boundary, and "2)" markers inside a run-on list.  Decimal values are
 # already protected when these run, so "1.2 cm" is never treated as a marker.
-_LEADING_LIST_MARKER_RE = re.compile(r"(^|\n|[.!?;:]\s+)\(?\d{1,2}[.)]\s+(?=\S)")
-_INLINE_LIST_MARKER_RE = re.compile(r"(?<=\s)\(?\d{1,2}\)\s+(?=[A-Za-z])")
+# A boundary is the start, a newline, or sentence punctuation after a letter or
+# bracket, so "ribs 4. 5. and 6." keeps its numbers.
+_LEADING_LIST_MARKER_RE = re.compile(r"(^|\n|(?<=[A-Za-z)\]])[.!?;:]\s+)\(?\d{1,2}[.)]\s+(?=\S)")
+_INLINE_LIST_MARKER_RE = re.compile(r"(?<=\s)\d{1,2}\)\s+(?=[A-Za-z])")
+_LIST_START_RE = re.compile(r"(?:^|[\s:])1\)\s")
 _MARKER_ONLY_RE = re.compile(r"^\(?\d{1,2}[.)]?$")
 _SECTION_HEADER_RE = re.compile(r"^(?:findings?|impressions?)\s*:\s*", re.IGNORECASE)
 
@@ -94,16 +97,35 @@ def sentence_split(text: object | None) -> list[str]:
     protected, marker = _protect_periods(value)
     # Numbered impressions ("1. No acute process. 2. Stable cardiomegaly.") put
     # each item on its own line so the markers never become claims.
+    list_started = bool(_LIST_START_RE.search(protected))
     protected = _LEADING_LIST_MARKER_RE.sub(lambda match: match.group(1) + "\n", protected)
-    protected = _INLINE_LIST_MARKER_RE.sub("\n", protected)
+    if list_started:
+        # Run-on "1) ... 2) ..." lists only; "CABG (2) sternal wires" is content.
+        protected = _INLINE_LIST_MARKER_RE.sub("\n", protected)
     parts = re.split(r"(?:\n+|(?<=[.!?])\s+)", protected)
+    fragments = [
+        _SECTION_HEADER_RE.sub("", part.replace(marker, ".").strip(" \t")) for part in parts
+    ]
+    fragments = [item for item in fragments if item and re.search(r"[A-Za-z0-9]", item)]
     sentences: list[str] = []
-    for part in parts:
-        restored = _SECTION_HEADER_RE.sub("", part.replace(marker, ".").strip(" \t"))
-        if not restored or _MARKER_ONLY_RE.match(restored):
+    index = 0
+    while index < len(fragments):
+        current = fragments[index]
+        following = fragments[index + 1] if index + 1 < len(fragments) else None
+        if _MARKER_ONLY_RE.match(current):
+            # A bare "5." is a list marker before a new item, but content when
+            # the text continues in lower case ("4. 5. and 6. ribs").
+            if following is not None and following[:1].islower():
+                fragments[index + 1] = f"{current} {following}"
+            index += 1
             continue
-        if re.search(r"[A-Za-z0-9]", restored):
-            sentences.append(restored)
+        if current.endswith(":") and following is not None:
+            # A lead-in such as "Lines:" belongs to the item that follows it.
+            fragments[index + 1] = f"{current} {following}"
+            index += 1
+            continue
+        sentences.append(current)
+        index += 1
     return sentences
 
 

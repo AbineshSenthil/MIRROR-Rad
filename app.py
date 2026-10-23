@@ -40,6 +40,7 @@ from radtrace.bidirectional import (
     ReportRiskCalibrator,
 )
 from radtrace.privacy import scan_privacy_risk
+from radtrace.routing import ROUTING_METHOD
 from radtrace.product import (
     ENV_ARTIFACT,
     ENV_CALIBRATOR,
@@ -702,7 +703,7 @@ def _runtime_provenance(verifier: Any, auditor: Any) -> dict[str, Any]:
         "neural_device": getattr(verifier.nli_predictor, "effective_device", None),
         "neural_fallback_used": bool(getattr(verifier.nli_predictor, "load_error", None)),
         "review_routing": getattr(auditor, "routing", None),
-        "priority_rules": "radtrace.routing (clinical-rules-v1)",
+        "priority_rules": ROUTING_METHOD if getattr(auditor, "routing", None) == "rules" else None,
         "archived_transfer_router": {
             "method": getattr(getattr(auditor, "calibrator", None), "method", None),
             "fit_granularity": metadata.get("fit_granularity"),
@@ -772,13 +773,15 @@ def render_audit_result(
         )
         priority_class = "priority-routine"
     reason_items = "".join(f"<li>{escape(reason)}</li>" for reason in reasons[:5])
+    if len(reasons) > 5:
+        reason_items += f"<li>+{len(reasons) - 5} more in the claim views below</li>"
     reason_html = f'<ul class="priority-reasons">{reason_items}</ul>' if reason_items else ""
     st.markdown(
         f'<section class="risk-hero {priority_class}" aria-label="Audit outcome"><div>'
         f'<div class="small">Audit outcome</div><h2>{escape(outcome_title)}</h2>'
         f'<div class="copy">{escape(outcome_copy)}</div>{reason_html}</div>'
-        f'<div class="risk-score"><span>Error-burden score</span><strong>{result.count_aware_risk * 100:.1f} / 100</strong>'
-        f'<small>Ranks reports in Dataset Lab · {issue_total} flagged claim path(s) · not a probability</small></div></section>',
+        f'<div class="risk-score"><span>Items to check</span><strong>{len(reasons)}</strong>'
+        f'<small>Reasons behind the priority · {issue_total} claim path(s) flagged by the model</small></div></section>',
         unsafe_allow_html=True,
     )
     st.markdown(
