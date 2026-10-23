@@ -17,10 +17,11 @@ from __future__ import annotations
 import json
 import math
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar
 
+from .routing import ROUTING_METHOD, route_review_priority
 from .types import AuditResult, ClaimAudit, Label, RiskTier
 from .verifier import RadTraceVerifier
 
@@ -167,6 +168,8 @@ class BidirectionalAuditResult:
     alignment_applied: bool
     review_priority: str
     scope: str = "textual consistency review"
+    priority_reasons: list[str] = field(default_factory=list)
+    routing_method: str = ROUTING_METHOD
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -182,11 +185,41 @@ class BidirectionalAuditResult:
             "aligned_risk": self.aligned_risk,
             "alignment_applied": self.alignment_applied,
             "review_priority": self.review_priority,
+            "priority_reasons": list(self.priority_reasons),
+            "routing_method": self.routing_method,
             "scope": self.scope,
         }
 
     def to_json(self, *, indent: int | None = 2) -> str:
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> BidirectionalAuditResult:
+        """Rebuild a result from :meth:`to_dict` output (used for saved batch runs)."""
+
+        features = ReportRiskFeatures(
+            **{name: float(value["risk_features"][name]) for name in ReportRiskFeatures.ORDER}
+        )
+        count_aware = value.get("count_aware_risk")
+        return cls(
+            reference_report=str(value["reference_report"]),
+            candidate_summary=str(value["candidate_summary"]),
+            commission_audit=AuditResult.from_dict(value["commission_audit"]),
+            omission_audit=AuditResult.from_dict(value["omission_audit"]),
+            commission=DirectionRisk(**value["commission"]),
+            omission=DirectionRisk(**value["omission"]),
+            risk_features=features,
+            raw_risk=float(value["raw_risk"]),
+            count_aware_risk=float(count_aware)
+            if count_aware is not None
+            else combine_count_aware_risk(features),
+            aligned_risk=float(value["aligned_risk"]),
+            alignment_applied=bool(value["alignment_applied"]),
+            review_priority=str(value["review_priority"]),
+            scope=str(value.get("scope", "textual consistency review")),
+            priority_reasons=[str(item) for item in value.get("priority_reasons") or []],
+            routing_method=str(value.get("routing_method", "legacy-threshold")),
+        )
 
 
 def combine_direction_risk(commission_risk: float, omission_risk: float) -> float:
@@ -392,7 +425,15 @@ class ReportRiskCalibrator:
 
 
 class BidirectionalAuditor:
-    """Run a real claim verifier in both safety-relevant directions."""
+    """Run a real claim verifier in both safety-relevant directions.
+
+    ``routing="rules"`` (the default) decides the review priority with the
+    transparent claim-level rules in :mod:`radtrace.routing`.  ``routing=
+    "threshold"`` restores the earlier behaviour of thresholding the optional
+    calibrator score; it is kept only to reproduce archived evaluations.
+    """
+
+    ROUTING_MODES = ("rules", "threshold")
 
     def __init__(
         self,
@@ -401,9 +442,13 @@ class BidirectionalAuditor:
         calibrator: ReportRiskCalibrator | None = None,
         review_threshold: float | None = None,
         high_priority_threshold: float | None = None,
+        routing: str = "rules",
     ) -> None:
+        if routing not in self.ROUTING_MODES:
+            raise ValueError(f"routing must be one of {self.ROUTING_MODES}")
         self.verifier = verifier
         self.calibrator = calibrator
+        self.routing = routing
         metadata = calibrator.metadata if calibrator is not None else {}
         self.review_threshold = float(
             review_threshold
@@ -481,12 +526,20 @@ class BidirectionalAuditor:
             raw = combine_direction_risk(commission.score, omission.score)
             count_aware = combine_count_aware_risk(feature)
             aligned = float(calibrated[index]) if calibrated[index] is not None else raw
-            if aligned >= self.high_priority_threshold:
-                priority = "HIGH"
-            elif aligned >= self.review_threshold:
-                priority = "REVIEW"
+            if self.routing == "rules":
+                decision = route_review_priority(commission_audit, omission_audit)
+                priority = decision.priority
+                reasons = list(decision.reasons)
+                routing_method = ROUTING_METHOD
             else:
-                priority = "ROUTINE"
+                if aligned >= self.high_priority_threshold:
+                    priority = "HIGH"
+                elif aligned >= self.review_threshold:
+                    priority = "REVIEW"
+                else:
+                    priority = "ROUTINE"
+                reasons = []
+                routing_method = "legacy-threshold"
             output.append(
                 BidirectionalAuditResult(
                     reference_report=reference,
@@ -501,6 +554,8 @@ class BidirectionalAuditor:
                     aligned_risk=aligned,
                     alignment_applied=calibrated[index] is not None,
                     review_priority=priority,
+                    priority_reasons=reasons,
+                    routing_method=routing_method,
                 )
             )
         return output

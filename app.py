@@ -37,11 +37,10 @@ from radtrace import release as release_runtime
 from radtrace.bidirectional import (
     BidirectionalAuditor,
     BidirectionalAuditResult,
-    DirectionRisk,
     ReportRiskCalibrator,
-    ReportRiskFeatures,
 )
 from radtrace.privacy import scan_privacy_risk
+from radtrace.routing import ROUTING_METHOD
 from radtrace.product import (
     ENV_ARTIFACT,
     ENV_CALIBRATOR,
@@ -54,7 +53,6 @@ from radtrace.product import (
     RESEARCH_NOTICE,
 )
 from radtrace.showcase import SHOWCASE_CASES, SHOWCASE_CASES_BY_ID, showcase_dataset_csv
-from radtrace.types import AuditResult
 from radtrace.ui_components import (
     LABEL_META,
     claim_card_html,
@@ -87,8 +85,8 @@ RELEASE_MANIFEST = _runtime_path(ENV_RELEASE_MANIFEST, "artifacts/mirror-rad-rel
 MAX_TEXT_CHARACTERS = 40_000
 BATCH_REPORTS = max(1, int(os.getenv("MIRROR_RAD_BATCH_REPORTS", "8")))
 NLI_BATCH_SIZE = max(1, int(os.getenv("MIRROR_RAD_NLI_BATCH_SIZE", "8")))
-AUDIT_SCHEMA = "mirror-rad.bidirectional-audit.v1"
-BATCH_SCHEMA = "mirror-rad.batch-audit.v1"
+AUDIT_SCHEMA = "mirror-rad.bidirectional-audit.v2"
+BATCH_SCHEMA = "mirror-rad.batch-audit.v2"
 RELEASE_SCHEMA = "mirror-rad.release.v1"
 RELEASE_VALIDATOR_REVISION = "mirror-rad-release-validation-2026-08-24"
 INFERENCE_GATE = threading.BoundedSemaphore(value=1)
@@ -165,7 +163,7 @@ body,.stApp{color:var(--mr-body)}.stApp,[data-testid="stAppViewContainer"]{backg
 .st-key-mirror_action_console{margin:.7rem 0 1rem;padding:.85rem 1rem;border:1px solid var(--mr-line);border-radius:18px;background:linear-gradient(110deg,#fff,rgba(238,236,255,.65));box-shadow:0 10px 30px rgba(34,37,78,.05)}.st-key-mirror_upload_bento{position:relative}.schema-list{display:grid;gap:.42rem;margin:.7rem 0 .85rem}.schema-row{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;padding:.5rem .58rem;border:1px solid var(--mr-line);border-radius:10px;background:var(--mr-soft);font-size:.74rem;line-height:1.4;color:var(--mr-muted)}.schema-row b{color:var(--mr-ink);font-weight:700}.schema-row span{white-space:nowrap;color:var(--mr-iris-dark);font-weight:750}.empty{position:relative;overflow:hidden;border:1px dashed #b7b4d4;background:linear-gradient(135deg,#fff,#f6f5ff);border-radius:18px;padding:1.55rem;text-align:center;color:var(--mr-muted);font-size:.88rem;line-height:1.55}.empty::before{content:"";position:absolute;width:90px;height:90px;right:-34px;top:-45px;border-radius:50%;background:rgba(101,88,245,.08)}.empty b{color:var(--mr-ink);font-weight:750}
 
 /* Audit decision and trace cards */
-.risk-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 205px;gap:1.35rem;align-items:center;background:linear-gradient(130deg,#fff,#f8f8ff);border:1px solid var(--mr-line);border-top:4px solid var(--mr-iris);border-radius:22px;padding:1.35rem 1.4rem;box-shadow:var(--mr-shadow);margin:.65rem 0 1rem}.risk-hero::after{content:"";position:absolute;right:-70px;bottom:-90px;width:230px;height:230px;border:1px solid rgba(101,88,245,.12);border-radius:50%;box-shadow:0 0 0 28px rgba(101,88,245,.035),0 0 0 60px rgba(17,184,210,.025);pointer-events:none}.risk-hero.priority-high{border-top-color:var(--mr-bad)}.risk-hero.priority-review{border-top-color:#b9780a}.risk-hero.priority-routine{border-top-color:var(--mr-good)}.risk-hero .small{font-size:.68rem;line-height:1.35;letter-spacing:.12em;text-transform:uppercase;color:var(--mr-iris-dark);font-weight:800}.risk-hero h2{font-family:var(--mr-display);font-size:1.62rem;line-height:1.22;letter-spacing:-.035em;color:var(--mr-ink);font-weight:750;margin:.27rem 0 .36rem}.risk-hero .copy{color:var(--mr-muted);font-size:.87rem;line-height:1.52;max-width:820px}.risk-score{position:relative;z-index:1;min-height:142px;display:flex;flex-direction:column;justify-content:center;padding:1rem;border:1px solid #d8d5f4;border-radius:18px;background:rgba(255,255,255,.86);box-shadow:inset 0 0 0 7px rgba(101,88,245,.04)}.risk-score span{display:block;color:var(--mr-muted);font-size:.65rem;line-height:1.35;text-transform:uppercase;letter-spacing:.075em;font-weight:800}.risk-score strong{display:block;color:var(--mr-ink);font-size:2rem;line-height:1.1;font-weight:780;letter-spacing:-.045em;margin:.25rem 0}.risk-score small{display:block;color:var(--mr-muted);font-size:.69rem;line-height:1.38}
+.risk-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 205px;gap:1.35rem;align-items:center;background:linear-gradient(130deg,#fff,#f8f8ff);border:1px solid var(--mr-line);border-top:4px solid var(--mr-iris);border-radius:22px;padding:1.35rem 1.4rem;box-shadow:var(--mr-shadow);margin:.65rem 0 1rem}.risk-hero::after{content:"";position:absolute;right:-70px;bottom:-90px;width:230px;height:230px;border:1px solid rgba(101,88,245,.12);border-radius:50%;box-shadow:0 0 0 28px rgba(101,88,245,.035),0 0 0 60px rgba(17,184,210,.025);pointer-events:none}.risk-hero.priority-high{border-top-color:var(--mr-bad)}.risk-hero.priority-review{border-top-color:#b9780a}.risk-hero.priority-routine{border-top-color:var(--mr-good)}.risk-hero .small{font-size:.68rem;line-height:1.35;letter-spacing:.12em;text-transform:uppercase;color:var(--mr-iris-dark);font-weight:800}.risk-hero h2{font-family:var(--mr-display);font-size:1.62rem;line-height:1.22;letter-spacing:-.035em;color:var(--mr-ink);font-weight:750;margin:.27rem 0 .36rem}.risk-hero .copy{color:var(--mr-muted);font-size:.87rem;line-height:1.52;max-width:820px}.priority-reasons{margin:.6rem 0 0;padding-left:1.1rem;color:var(--mr-body);font-size:.83rem;line-height:1.5}.priority-reasons li{margin:.15rem 0}.risk-score{position:relative;z-index:1;min-height:142px;display:flex;flex-direction:column;justify-content:center;padding:1rem;border:1px solid #d8d5f4;border-radius:18px;background:rgba(255,255,255,.86);box-shadow:inset 0 0 0 7px rgba(101,88,245,.04)}.risk-score span{display:block;color:var(--mr-muted);font-size:.65rem;line-height:1.35;text-transform:uppercase;letter-spacing:.075em;font-weight:800}.risk-score strong{display:block;color:var(--mr-ink);font-size:2rem;line-height:1.1;font-weight:780;letter-spacing:-.045em;margin:.25rem 0}.risk-score small{display:block;color:var(--mr-muted);font-size:.69rem;line-height:1.38}
 .direction-lanes{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.1rem 0 1rem}.direction-lane{position:relative;overflow:hidden;padding:.72rem .82rem;border:1px solid var(--mr-line);border-radius:14px;background:#fff}.direction-lane span{display:block;color:var(--mr-muted);font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800}.direction-lane b{display:block;color:var(--mr-ink);font-size:.9rem;margin-top:.18rem}.direction-lane::after{content:"";position:absolute;bottom:0;height:3px;width:54%;background:linear-gradient(90deg,var(--mr-cyan),var(--mr-iris))}.direction-lane:first-child::after{left:0}.direction-lane:last-child::after{right:0;transform:scaleX(-1)}
 .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin:.7rem 0 1.3rem}.kpi{position:relative;overflow:hidden;background:var(--mr-surface);border:1px solid var(--mr-line);border-radius:16px;padding:.92rem 1rem;min-height:108px;transition:transform .2s ease,box-shadow .2s ease}.kpi:hover{transform:translateY(-2px);box-shadow:0 13px 30px rgba(31,36,80,.07)}.kpi::after{content:"";position:absolute;right:-18px;top:-24px;width:55px;height:55px;border:1px solid rgba(101,88,245,.13);border-radius:50%}.kpi .label{color:var(--mr-muted);font-size:.66rem;line-height:1.35;letter-spacing:.07em;text-transform:uppercase;font-weight:800}.kpi .value{color:var(--mr-ink);font-size:1.48rem;font-weight:780;line-height:1.25;margin:.2rem 0}.kpi .note{color:var(--mr-muted);font-size:.73rem;line-height:1.4}
 .claim-card{position:relative;background:var(--mr-surface);border:1px solid var(--mr-line);border-left-width:4px;border-radius:16px;padding:1.05rem 1.1rem;margin:.8rem 0 .34rem;box-shadow:0 8px 25px rgba(28,33,69,.04);overflow-wrap:anywhere;transition:transform .2s ease,box-shadow .2s ease}.claim-card:hover{transform:translateY(-1px);box-shadow:0 14px 34px rgba(28,33,69,.075)}.claim-supported{border-left-color:var(--mr-good)}.claim-contradicted{border-left-color:var(--mr-bad)}.claim-unsupported{border-left-color:#b16b00}.claim-review{border-left-color:var(--mr-iris)}.claim-card-top{display:flex;justify-content:space-between;gap:.65rem;align-items:flex-start}.claim-index{font-size:.68rem;line-height:1.35;letter-spacing:.085em;color:var(--mr-muted);font-weight:800}.status-badge,.risk-pill{display:inline-flex;align-items:center;padding:.27rem .58rem;border-radius:999px;font-size:.72rem;line-height:1.4;font-weight:750}.status-supported{color:#0e6147;background:var(--mr-good-soft)}.status-contradicted{color:#8d2020;background:var(--mr-bad-soft)}.status-unsupported{color:#734500;background:var(--mr-warn-soft)}.status-review{color:#3f319f;background:var(--mr-iris-soft)}.risk-critical,.risk-high{color:#8d2020;background:var(--mr-bad-soft)}.risk-medium{color:#734500;background:var(--mr-warn-soft)}.risk-low{color:#0e6147;background:var(--mr-good-soft)}.risk-unspecified{color:#4e576f;background:#eceef4}.claim-text{font-size:.96rem;line-height:1.62;color:var(--mr-ink);margin:.78rem 0;overflow-wrap:anywhere}.claim-meta{display:flex;gap:.65rem 1rem;flex-wrap:wrap;color:var(--mr-muted);font-size:.76rem;line-height:1.45}.evidence-panel{background:linear-gradient(135deg,var(--mr-soft),#f8f9fc);border:1px solid var(--mr-line);border-radius:14px;padding:.95rem 1rem;overflow-wrap:anywhere}.evidence-kicker,.rationale-label{font-size:.67rem;line-height:1.35;letter-spacing:.08em;text-transform:uppercase;color:var(--mr-ink);font-weight:800}.evidence-panel blockquote{margin:.55rem 0;border-left:3px solid var(--mr-cyan);padding:.58rem .78rem;background:var(--mr-surface);border-radius:0 10px 10px 0;color:var(--mr-body);line-height:1.56;overflow-wrap:anywhere}.evidence-score,.rationale-text{color:var(--mr-muted);font-size:.79rem;line-height:1.5}.evidence-highlight{background:#cff5f7;padding:.05rem .14rem;border-radius:4px}
@@ -704,7 +702,9 @@ def _runtime_provenance(verifier: Any, auditor: Any) -> dict[str, Any]:
         "neural_backend": getattr(verifier.nli_predictor, "name", None),
         "neural_device": getattr(verifier.nli_predictor, "effective_device", None),
         "neural_fallback_used": bool(getattr(verifier.nli_predictor, "load_error", None)),
-        "review_router": {
+        "review_routing": getattr(auditor, "routing", None),
+        "priority_rules": ROUTING_METHOD if getattr(auditor, "routing", None) == "rules" else None,
+        "archived_transfer_router": {
             "method": getattr(getattr(auditor, "calibrator", None), "method", None),
             "fit_granularity": metadata.get("fit_granularity"),
             "fit_report_split_sha256": metadata.get("fit_report_split_sha256"),
@@ -756,33 +756,32 @@ def render_audit_result(
     reverse = summarize_claims(_normalized_direction(result.omission_audit, 0.0)["claims"])
     issue_total = int(forward["flagged"]) + int(reverse["flagged"])
     priority_key = str(result.review_priority).strip().upper()
+    reasons = list(getattr(result, "priority_reasons", []) or [])
     if priority_key == "HIGH":
         outcome_title = "High-priority review recommended"
-        outcome_copy = (
-            f"The audit found {issue_total} flagged claim path(s). Review the evidence traces before this "
-            "summary is used downstream."
-        )
+        outcome_copy = "A conflict, an invented finding, or a missing critical finding was detected."
         priority_class = "priority-high"
     elif priority_key == "REVIEW":
         outcome_title = "Review recommended"
-        outcome_copy = (
-            f"The audit found {issue_total} flagged or uncertain claim path(s). Inspect the source evidence "
-            "and model abstentions."
-        )
+        outcome_copy = "Some summary content is unsupported or uncertain, or a source finding is missing."
         priority_class = "priority-review"
     else:
         outcome_title = "Routine review queue"
         outcome_copy = (
-            f"The audit found {issue_total} flagged claim path(s) at the configured thresholds. This does not "
-            "verify the radiograph or establish clinical correctness."
+            "No conflicts, invented findings, or missing positive findings were detected. Normal statements a "
+            "concise summary leaves out do not raise the priority. This does not verify the radiograph."
         )
         priority_class = "priority-routine"
+    reason_items = "".join(f"<li>{escape(reason)}</li>" for reason in reasons[:5])
+    if len(reasons) > 5:
+        reason_items += f"<li>+{len(reasons) - 5} more in the claim views below</li>"
+    reason_html = f'<ul class="priority-reasons">{reason_items}</ul>' if reason_items else ""
     st.markdown(
         f'<section class="risk-hero {priority_class}" aria-label="Audit outcome"><div>'
         f'<div class="small">Audit outcome</div><h2>{escape(outcome_title)}</h2>'
-        f'<div class="copy">{escape(outcome_copy)}</div></div>'
-        f'<div class="risk-score"><span>Review-routing score</span><strong>{result.aligned_risk * 100:.1f} / 100</strong>'
-        '<small>Research queue signal · not a diagnostic probability</small></div></section>',
+        f'<div class="copy">{escape(outcome_copy)}</div>{reason_html}</div>'
+        f'<div class="risk-score"><span>Items to check</span><strong>{len(reasons)}</strong>'
+        f'<small>Reasons behind the priority · {issue_total} claim path(s) flagged by the model</small></div></section>',
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -811,7 +810,7 @@ def render_audit_result(
         "input_sha256": hashlib.sha256(
             (result.reference_report + "\n---\n" + result.candidate_summary).encode("utf-8")
         ).hexdigest(),
-        "artifact_role": "expert-quarantined clinical NLI, learned fusion, and ReXErr transfer router",
+        "artifact_role": "expert-quarantined clinical NLI, learned fusion, rule-based review routing",
         **_runtime_provenance(verifier, auditor),
     }
     with left:
@@ -1011,21 +1010,7 @@ def audit_workspace() -> None:
 def _restore_bidirectional(record: dict[str, Any]) -> BidirectionalAuditResult:
     if record.get("schema") != AUDIT_SCHEMA or not isinstance(record.get("audit"), dict):
         raise ValueError("Unsupported or incomplete saved audit schema.")
-    detail = record["audit"]
-    return BidirectionalAuditResult(
-        reference_report=detail["reference_report"],
-        candidate_summary=detail["candidate_summary"],
-        commission_audit=AuditResult.from_dict(detail["commission_audit"]),
-        omission_audit=AuditResult.from_dict(detail["omission_audit"]),
-        commission=DirectionRisk(**detail["commission"]),
-        omission=DirectionRisk(**detail["omission"]),
-        risk_features=ReportRiskFeatures(**detail["risk_features"]),
-        raw_risk=detail["raw_risk"],
-        aligned_risk=detail["aligned_risk"],
-        alignment_applied=detail["alignment_applied"],
-        review_priority=detail["review_priority"],
-        scope=detail.get("scope", "textual consistency review"),
-    )
+    return BidirectionalAuditResult.from_dict(record["audit"])
 
 
 def dataset_audit() -> None:
@@ -1187,6 +1172,8 @@ def dataset_audit() -> None:
                     **metadata,
                     "status": "completed",
                     "review_priority": audit.review_priority,
+                    "priority_reasons": " | ".join(audit.priority_reasons),
+                    "error_burden": round(audit.count_aware_risk, 6),
                     "aligned_risk": round(audit.aligned_risk, 6),
                     "commission_risk": round(audit.commission.score, 6),
                     "omission_risk": round(audit.omission.score, 6),
@@ -1231,6 +1218,8 @@ def dataset_audit() -> None:
                     **metadata,
                     "status": "failed",
                     "review_priority": "",
+                    "priority_reasons": "",
+                    "error_burden": "",
                     "aligned_risk": "",
                     "commission_risk": "",
                     "omission_risk": "",
@@ -1334,10 +1323,12 @@ def dataset_audit() -> None:
                 )
             )
         ]
+        priority_rank = {"HIGH": 0, "REVIEW": 1, "ROUTINE": 2}
         displayed.sort(
             key=lambda row: (
                 row["status"] != "completed",
-                -float(row["aligned_risk"]) if row["status"] == "completed" else 0.0,
+                priority_rank.get(str(row.get("review_priority")), 3),
+                -float(row["error_burden"]) if row["status"] == "completed" else 0.0,
             )
         )
         display_rows = []
@@ -1348,8 +1339,9 @@ def dataset_audit() -> None:
                     "Case": row.get("case_id"),
                     "Status": str(row.get("status", "")).title(),
                     "Review priority": row.get("review_priority") or "—",
-                    "Overall review score": (
-                        f"{float(row['aligned_risk']):.1%}" if completed else "—"
+                    "Why": row.get("priority_reasons") or "—",
+                    "Error-burden score": (
+                        f"{float(row['error_burden']):.1%}" if completed else "—"
                     ),
                     "Added/conflicting score": (
                         f"{float(row['commission_risk']):.1%}" if completed else "—"
@@ -1597,7 +1589,7 @@ def evaluation_hub() -> None:
         for key, label in (
             ("count_aware_bidirectional_raw", f"{PRODUCT_NAME} count-aware bidirectional"),
             ("legacy_max_top3_bidirectional_raw", f"{PRODUCT_NAME} legacy max/top-3"),
-            ("rexerr_transfer_router", f"{PRODUCT_NAME} ReXErr transfer router"),
+            ("rexerr_transfer_router", f"{PRODUCT_NAME} ReXErr transfer router (archived)"),
         ):
             model = data["model_ablations"][key]
             rows.append(
@@ -1619,6 +1611,11 @@ def evaluation_hub() -> None:
             )
         st.markdown("#### Established metric comparison")
         st.dataframe(rows, hide_index=True, width="stretch")
+        st.caption(
+            "The app ranks reports with the count-aware bidirectional score shown first above. Review priority "
+            "is decided by transparent claim-level rules (radtrace.routing); the archived ReXErr transfer router "
+            "was trained on equal-length report pairs and is no longer used for decisions."
+        )
         chexbert = data["established_baselines"].get("CheXbert", {})
         comparison = chexbert.get("paired_difference_vs_mirror", {})
         auroc_difference = comparison.get("auroc", {})
@@ -1927,7 +1924,7 @@ def system_status() -> None:
         "verifier_configuration": "Verifier configuration",
         "fusion_model": "Learned evidence fusion",
         "clinical_nli_checkpoint": "Clinical NLI model",
-        "complete_report_router": "Complete-report review router",
+        "complete_report_router": "Archived ReXErr transfer model",
         "evaluation_ledger": "Evaluation evidence ledger",
         "sealed_release_manifest": "Sealed release integrity",
     }
@@ -1998,8 +1995,8 @@ def system_status() -> None:
                 finally:
                     INFERENCE_GATE.release()
             st.success(
-                f"Neural self-check passed. Both directions completed with transfer score "
-                f"{result.aligned_risk:.3f}."
+                f"Neural self-check passed. Both directions completed: priority "
+                f"{result.review_priority.title()}, error-burden score {result.count_aware_risk:.3f}."
             )
     section("Privacy and deployment", "Session-only research service")
     st.markdown(

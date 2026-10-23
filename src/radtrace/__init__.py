@@ -1,6 +1,6 @@
 """MIRROR-Rad evidence-grounded radiology summary integrity auditing."""
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 try:
     from .verifier import RadTraceVerifier
