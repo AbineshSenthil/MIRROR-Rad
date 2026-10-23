@@ -1,16 +1,16 @@
 {
   "assets": {
     "application": {
-      "bytes": 130226,
+      "bytes": 130734,
       "kind": "file",
       "path": "app.py",
-      "sha256": "b8c2139e7e8e95d42814830c50ea8c06eb1327f7d07a7c8a0185c7bae9a60c17"
+      "sha256": "4781fcb49e7982e43ad464ccfee990bebb28e9daeb68dff58c1259d82b2dc634"
     },
     "engine": {
-      "bytes": 273506,
+      "bytes": 285196,
       "kind": "directory",
       "path": "src/radtrace",
-      "sha256": "6d4e19dec08a25f87fa23d346965f8659357a55bc5aed223c5a4f99ef38ef9a1"
+      "sha256": "8b2aa847f31baef6114f34641caa993345970fabbef25281ce9c2bbce2b4bad2"
     },
     "evaluation_ledger": {
       "bytes": 181902,
@@ -85,8 +85,8 @@
       "sha256": "5558af60e81f070f7e2965a80510cf266529fcbac49d594a44e21d2806f87425"
     }
   },
-  "created_at_utc": "2026-08-24T03:45:53.880037+00:00",
+  "created_at_utc": "2026-10-23T12:56:35.001541+00:00",
   "project": "MIRROR-Rad",
-  "release_id": "00ea59cb3aa88eea934d",
+  "release_id": "60e4557ff9c0d2419558",
   "schema": "mirror-rad.release.v1"
 }

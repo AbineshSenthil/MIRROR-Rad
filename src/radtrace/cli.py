@@ -26,7 +26,7 @@ from .verifier import RadTraceVerifier
 
 DEFAULT_ARTIFACT = PROJECT_ROOT / "artifacts" / "mirror-rad-system" / "tuned_verifier"
 DEFAULT_CALIBRATOR = PROJECT_ROOT / "artifacts" / "mirror-rad-risk-calibrator.pkl"
-DEFAULT_LEDGER = PROJECT_ROOT / "reports" / "generated" / "evaluation_summary.json"
+DEFAULT_LEDGER = PROJECT_ROOT / "reports" / "public" / "evaluation_summary.json"
 DEFAULT_RELEASE_MANIFEST = PROJECT_ROOT / "artifacts" / "mirror-rad-release.json"
 SCRIPT_COMMANDS = {
     "prepare": "prepare_data.py",
@@ -45,7 +45,13 @@ def _load_text(value: str | None, file_path: str | None, name: str) -> str:
 
 
 def _run_script(name: str, arguments: Sequence[str]) -> int:
-    command = [sys.executable, str(PROJECT_ROOT / "scripts" / name), *arguments]
+    script = PROJECT_ROOT / "scripts" / name
+    if not script.is_file():
+        raise SystemExit(
+            f"scripts/{name} is not in this checkout. Training and benchmark scripts need the "
+            "licensed datasets described in README.md (Reproducing the results)."
+        )
+    command = [sys.executable, str(script), *arguments]
     return subprocess.call(command, cwd=PROJECT_ROOT)
 
 
@@ -97,7 +103,7 @@ def _audit(args: argparse.Namespace) -> int:
     calibrator = ReportRiskCalibrator.load(args.calibrator)
     result = BidirectionalAuditor(verifier, calibrator=calibrator).audit(reference, candidate)
     payload = {
-        "schema": "mirror-rad.bidirectional-audit.v1",
+        "schema": "mirror-rad.bidirectional-audit.v2",
         "release_id": release.get("release_id"),
         "neural_fallback_used": False,
         "audit": result.to_dict(),

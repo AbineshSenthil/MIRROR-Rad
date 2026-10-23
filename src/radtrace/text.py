@@ -15,17 +15,22 @@ _SPACE_RE = re.compile(r"[^\S\r\n]+")
 _BLANK_LINE_RE = re.compile(r"\s*\n\s*")
 _REDACTION_RE = re.compile(r"(?<![A-Za-z])X{3,}(?![A-Za-z])", re.IGNORECASE)
 _DECIMAL_RE = re.compile(r"(?<=\d)\.(?=\d)")
-_ABBREVIATIONS = (
-    "dr.",
-    "mr.",
-    "mrs.",
-    "ms.",
-    "vs.",
-    "e.g.",
-    "i.e.",
-    "no.",
-    "approx.",
+# Abbreviation periods that do not end a sentence.  Each pattern requires a
+# non-letter before the abbreviation so word endings such as "aneurysms." or
+# "symptoms." are never mistaken for "ms.".  "No." is only an abbreviation when
+# a number follows ("No. 2"); otherwise it is the clinical negation "no".
+_ABBREVIATION_PATTERNS = (
+    re.compile(r"(?<![A-Za-z])(?:dr|mr|mrs|ms|vs|approx)\.", re.IGNORECASE),
+    re.compile(r"(?<![A-Za-z])(?:e\.g|i\.e)\.", re.IGNORECASE),
+    re.compile(r"(?<![A-Za-z])no\.(?=\s*\d)", re.IGNORECASE),
 )
+# Enumeration markers such as "1." or "2)" at the start of the text or after a
+# sentence boundary, and "2)" markers inside a run-on list.  Decimal values are
+# already protected when these run, so "1.2 cm" is never treated as a marker.
+_LEADING_LIST_MARKER_RE = re.compile(r"(^|\n|[.!?;:]\s+)\(?\d{1,2}[.)]\s+(?=\S)")
+_INLINE_LIST_MARKER_RE = re.compile(r"(?<=\s)\(?\d{1,2}\)\s+(?=[A-Za-z])")
+_MARKER_ONLY_RE = re.compile(r"^\(?\d{1,2}[.)]?$")
+_SECTION_HEADER_RE = re.compile(r"^(?:findings?|impressions?)\s*:\s*", re.IGNORECASE)
 
 
 def normalize_text(text: object | None) -> str:
@@ -66,13 +71,8 @@ def _protect_periods(text: str) -> tuple[str, str]:
 
     marker = "\ue000"
     protected = _DECIMAL_RE.sub(marker, text)
-    for abbreviation in _ABBREVIATIONS:
-        protected = re.sub(
-            re.escape(abbreviation),
-            lambda match: match.group(0).replace(".", marker),
-            protected,
-            flags=re.IGNORECASE,
-        )
+    for pattern in _ABBREVIATION_PATTERNS:
+        protected = pattern.sub(lambda match: match.group(0).replace(".", marker), protected)
     # Initials such as "A. Smith" are not sentence boundaries.
     protected = re.sub(
         r"\b([A-Z])\.(?=\s+[A-Z][a-z])", rf"\1{marker}", protected
@@ -92,11 +92,17 @@ def sentence_split(text: object | None) -> list[str]:
     if not value:
         return []
     protected, marker = _protect_periods(value)
+    # Numbered impressions ("1. No acute process. 2. Stable cardiomegaly.") put
+    # each item on its own line so the markers never become claims.
+    protected = _LEADING_LIST_MARKER_RE.sub(lambda match: match.group(1) + "\n", protected)
+    protected = _INLINE_LIST_MARKER_RE.sub("\n", protected)
     parts = re.split(r"(?:\n+|(?<=[.!?])\s+)", protected)
     sentences: list[str] = []
     for part in parts:
-        restored = part.replace(marker, ".").strip(" \t")
-        if restored and re.search(r"[A-Za-z0-9]", restored):
+        restored = _SECTION_HEADER_RE.sub("", part.replace(marker, ".").strip(" \t"))
+        if not restored or _MARKER_ONLY_RE.match(restored):
+            continue
+        if re.search(r"[A-Za-z0-9]", restored):
             sentences.append(restored)
     return sentences
 
